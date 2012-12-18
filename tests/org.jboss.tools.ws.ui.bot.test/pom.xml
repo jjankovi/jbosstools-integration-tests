@@ -17,8 +17,15 @@
 	<properties>
 		<systemProperties>-Dswtbot.test.properties.file=${project.basedir}/properties/swtbot.properties</systemProperties>
 		<surefire.timeout>10800</surefire.timeout>
+		<suiteClass>org.jboss.tools.ws.ui.bot.test.WSAllBotTests</suiteClass>
 	</properties>
 	<profiles>
+		<profile>
+			<id>jenkins</id>
+			<properties>
+				<suiteClass>org.jboss.tools.ws.ui.bot.test.JenkinsTestSuite</suiteClass>
+			</properties>			
+		</profile>
 	</profiles>
 	<build>
 		<plugins>
@@ -52,7 +59,7 @@
 				<artifactId>tycho-surefire-plugin</artifactId>
 				<configuration>
 					<testSuite>org.jboss.tools.ws.ui.bot.test</testSuite>
-					<testClass>org.jboss.tools.ws.ui.bot.test.WSAllBotTests</testClass>
+					<testClass>${suiteClass}</testClass>
 					<useUIThread>false</useUIThread>
 					<skip>${swtbot.test.skip}</skip>
 					<dependencies combine.children="append">
