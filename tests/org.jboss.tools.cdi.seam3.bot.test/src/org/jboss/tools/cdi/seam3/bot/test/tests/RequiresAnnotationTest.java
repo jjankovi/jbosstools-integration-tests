@@ -43,7 +43,7 @@ public class RequiresAnnotationTest extends SolderAnnotationTestBase {
 		packageExplorer.openFile(projectName, CDIConstants.SRC,
 				getPackageName(), APPLICATION_CLASS).toTextEditor();
 
-		testNoBeanValidationProblemExists(projectName);
+		testNoBeanValidationProblemExists();
 
 		packageExplorer.openFile(projectName, CDIConstants.SRC,
 				getPackageName(), managerProducer + ".java").toTextEditor();
@@ -51,7 +51,7 @@ public class RequiresAnnotationTest extends SolderAnnotationTestBase {
 				+ "\")", "@Requires(\"" + getPackageName() + "." + manager
 				+ "\")");
 
-		testProperInjectBean(projectName, "managerProducer", managerProducer);
+		testProperInjectBean("managerProducer", managerProducer);
 
 	}
 
@@ -67,7 +67,7 @@ public class RequiresAnnotationTest extends SolderAnnotationTestBase {
 		packageExplorer.openFile(projectName, CDIConstants.SRC,
 				getPackageName(), APPLICATION_CLASS).toTextEditor();
 
-		testNoBeanValidationProblemExists(projectName);
+		testNoBeanValidationProblemExists();
 
 		packageExplorer.openFile(projectName, CDIConstants.SRC,
 				getPackageName(), managerProducer + ".java").toTextEditor();
@@ -75,7 +75,7 @@ public class RequiresAnnotationTest extends SolderAnnotationTestBase {
 				+ "\")", "@Requires(\"" + getPackageName() + "." + manager
 				+ "\")");
 
-		testProperInjectBean(projectName, "managerProducer", managerProducer);
+		testProperInjectBean("managerProducer", managerProducer);
 
 	}
 
@@ -91,7 +91,7 @@ public class RequiresAnnotationTest extends SolderAnnotationTestBase {
 		packageExplorer.openFile(projectName, CDIConstants.SRC,
 				getPackageName(), APPLICATION_CLASS).toTextEditor();
 
-		testNoBeanValidationProblemExists(projectName);
+		testNoBeanValidationProblemExists();
 
 		packageExplorer.openFile(projectName, CDIConstants.SRC,
 				getPackageName(), managerProducer + ".java").toTextEditor();
@@ -99,7 +99,7 @@ public class RequiresAnnotationTest extends SolderAnnotationTestBase {
 				+ "\")", "@Requires(\"" + getPackageName() + "." + manager
 				+ "\")");
 
-		testProperInjectProducer(projectName, "managerProducer",
+		testProperInjectProducer("managerProducer",
 				managerProducer, "getManagerProducer");
 
 	}
@@ -116,7 +116,7 @@ public class RequiresAnnotationTest extends SolderAnnotationTestBase {
 		packageExplorer.openFile(projectName, CDIConstants.SRC,
 				getPackageName(), APPLICATION_CLASS).toTextEditor();
 
-		testNoBeanValidationProblemExists(projectName);
+		testNoBeanValidationProblemExists();
 
 		packageExplorer.openFile(projectName, CDIConstants.SRC,
 				getPackageName(), managerProducer + ".java").toTextEditor();
@@ -124,7 +124,7 @@ public class RequiresAnnotationTest extends SolderAnnotationTestBase {
 				+ "\")", "@Requires(\"" + getPackageName() + "." + manager
 				+ "\")");
 
-		testProperInjectProducer(projectName, "managerProducer",
+		testProperInjectProducer("managerProducer",
 				managerProducer, "managerProducer");
 
 	}

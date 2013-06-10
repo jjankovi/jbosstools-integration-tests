@@ -13,10 +13,11 @@ package org.jboss.tools.cdi.bot.test.quickfix.test;
 
 
 import org.jboss.tools.cdi.bot.test.CDITestBase;
-import org.jboss.tools.cdi.bot.test.annotations.CDIWizardType;
-import org.jboss.tools.cdi.bot.test.annotations.ValidationType;
-import org.jboss.tools.cdi.bot.test.quickfix.validators.IValidationProvider;
-import org.jboss.tools.cdi.bot.test.quickfix.validators.InterceptorValidationProvider;
+import org.jboss.tools.cdi.bot.test.annotations.ProblemsType;
+import org.jboss.tools.cdi.bot.test.creator.InterceptorCreator;
+import org.jboss.tools.cdi.bot.test.creator.config.InterceptorConfiguration;
+import org.jboss.tools.cdi.bot.test.creator.util.CDICreatorUtil;
+import org.jboss.tools.cdi.bot.test.util.QuickFixUtil;
 import org.junit.Test;
 
 /**
@@ -27,11 +28,20 @@ import org.junit.Test;
 
 public class InterceptorValidationQuickFixTest extends CDITestBase {
 	
-	private static IValidationProvider validationProvider = new InterceptorValidationProvider();
+	private static final String VALIDATION_PROBLEM_1 = "Bean class " + 
+		"of a session bean cannot be annotated @Interceptor";
+	private static final String VALIDATION_PROBLEM_2 = "Interceptor " + 
+		"should not have a name";
+	private static final String VALIDATION_PROBLEM_3 = "Producer " + 
+		"cannot be declared in an interceptor";
+	private static final String VALIDATION_PROBLEM_4 = "Interceptor " + 
+		"has a method annotated @Disposes";
+	private static final String VALIDATION_PROBLEM_5 = "Interceptor " + 
+		"cannot have a method with a parameter annotated @Observes";
+	private static final String VALIDATION_PROBLEM_6 = "Interceptor " + 
+		"should not be annotated @Specializes";
 	
-	public IValidationProvider validationProvider() {
-		return validationProvider;
-	}
+	private static final String QUICK_FIX_1 = "Delete annotation"; 
 	
 	// https://issues.jboss.org/browse/JBIDE-7680
 	@Test
@@ -39,13 +49,13 @@ public class InterceptorValidationQuickFixTest extends CDITestBase {
 			
 		String className = "Interceptor1";
 		
-		wizard.createCDIComponentWithContent(CDIWizardType.INTERCEPTOR, className, 
-				getPackageName(), null, "/resources/quickfix/interceptor/" +
-						"InterceptorWithStateless.java.cdi");
-
+		newInterceptorWithContent(getPackageName(), className, 
+			"/resources/quickfix/interceptor/InterceptorWithStateless.java.cdi");
+		
 		editResourceUtil.replaceInEditor("InterceptorComponent", className);
 		
-		quickFixHelper.checkQuickFix(ValidationType.STATELESS, getProjectName(), validationProvider());
+		QuickFixUtil.performQuickFix(ProblemsType.ERRORS, 
+				VALIDATION_PROBLEM_1, QUICK_FIX_1);
 			
 	}
 	
@@ -55,13 +65,13 @@ public class InterceptorValidationQuickFixTest extends CDITestBase {
 		
 		String className = "Interceptor2";
 		
-		wizard.createCDIComponentWithContent(CDIWizardType.INTERCEPTOR, className, 
-				getPackageName(), null, "/resources/quickfix/interceptor/" +
-						"InterceptorWithNamed.java.cdi");
-
+		newInterceptorWithContent(getPackageName(), className, 
+			"/resources/quickfix/interceptor/InterceptorWithNamed.java.cdi");
+		
 		editResourceUtil.replaceInEditor("InterceptorComponent", className);
 		
-		quickFixHelper.checkQuickFix(ValidationType.NAMED, getProjectName(), validationProvider());
+		QuickFixUtil.performQuickFix(ProblemsType.WARNINGS, 
+				VALIDATION_PROBLEM_2, QUICK_FIX_1);
 		
 	}
 	
@@ -71,13 +81,13 @@ public class InterceptorValidationQuickFixTest extends CDITestBase {
 		
 		String className = "Interceptor3";
 		
-		wizard.createCDIComponentWithContent(CDIWizardType.INTERCEPTOR, className, 
-				getPackageName(), null, "/resources/quickfix/interceptor/" +
-						"InterceptorWithProducer.java.cdi");
-
+		newInterceptorWithContent(getPackageName(), className, 
+			"/resources/quickfix/interceptor/InterceptorWithProducer.java.cdi");
+		
 		editResourceUtil.replaceInEditor("InterceptorComponent", className);
 		
-		quickFixHelper.checkQuickFix(ValidationType.PRODUCES, getProjectName(), validationProvider());
+		QuickFixUtil.performQuickFix(ProblemsType.ERRORS, 
+				VALIDATION_PROBLEM_3, QUICK_FIX_1);
 		
 	}
 	
@@ -87,13 +97,13 @@ public class InterceptorValidationQuickFixTest extends CDITestBase {
 		
 		String className = "Interceptor4";
 		
-		wizard.createCDIComponentWithContent(CDIWizardType.INTERCEPTOR, className, 
-				getPackageName(), null, "/resources/quickfix/interceptor/" +
-						"InterceptorWithDisposes.java.cdi");
-
+		newInterceptorWithContent(getPackageName(), className, 
+			"/resources/quickfix/interceptor/InterceptorWithDisposes.java.cdi");
+		
 		editResourceUtil.replaceInEditor("InterceptorComponent", className);
 		
-		quickFixHelper.checkQuickFix(ValidationType.DISPOSES, getProjectName(), validationProvider());
+		QuickFixUtil.performQuickFix(ProblemsType.ERRORS, 
+				VALIDATION_PROBLEM_4, QUICK_FIX_1);
 		
 	}
 	
@@ -103,16 +113,16 @@ public class InterceptorValidationQuickFixTest extends CDITestBase {
 		
 		String className = "Interceptor5";
 		
-		wizard.createCDIComponentWithContent(CDIWizardType.INTERCEPTOR, className, 
-				getPackageName(), null, "/resources/quickfix/interceptor/" +
-						"InterceptorWithDisposes.java.cdi");
+		newInterceptorWithContent(getPackageName(), className, 
+			"/resources/quickfix/interceptor/InterceptorWithDisposes.java.cdi");
 		
 		editResourceUtil.replaceInEditor("import javax.enterprise.inject.Disposes;", 
 				"import javax.enterprise.event.Observes;");
 		editResourceUtil.replaceInEditor("@Disposes", "@Observes");
 		editResourceUtil.replaceInEditor("InterceptorComponent", className);
 		
-		quickFixHelper.checkQuickFix(ValidationType.OBSERVES, getProjectName(), validationProvider());
+		QuickFixUtil.performQuickFix(ProblemsType.ERRORS, 
+				VALIDATION_PROBLEM_5, QUICK_FIX_1);
 			
 	}
 	
@@ -122,14 +132,21 @@ public class InterceptorValidationQuickFixTest extends CDITestBase {
 		
 		String className = "Interceptor6";
 		
-		wizard.createCDIComponentWithContent(CDIWizardType.INTERCEPTOR, className, 
-				getPackageName(), null, "/resources/quickfix/interceptor/" +
-						"InterceptorWithSpecializes.java.cdi");
-
+		newInterceptorWithContent(getPackageName(), className, 
+			"/resources/quickfix/interceptor/InterceptorWithSpecializes.java.cdi");
+		
 		editResourceUtil.replaceInEditor("InterceptorComponent", className);
 		
-		quickFixHelper.checkQuickFix(ValidationType.SPECIALIZES, getProjectName(), validationProvider());
+		QuickFixUtil.performQuickFix(ProblemsType.WARNINGS, 
+				VALIDATION_PROBLEM_6, QUICK_FIX_1);
 			
 	}
+	
+	private void newInterceptorWithContent(String packageName, String name, String resource) {
+		new InterceptorCreator(new InterceptorConfiguration()
+			.setPackageName(packageName)
+			.setName(name)).newInterceptor();
+		CDICreatorUtil.fillContentOfEditor(name + ".java", resource);
+	} 
 	
 }

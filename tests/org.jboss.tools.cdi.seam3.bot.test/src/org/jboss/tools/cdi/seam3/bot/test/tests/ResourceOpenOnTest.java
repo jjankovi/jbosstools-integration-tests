@@ -13,6 +13,7 @@ package org.jboss.tools.cdi.seam3.bot.test.tests;
 
 
 import org.jboss.tools.cdi.bot.test.CDIConstants;
+import org.jboss.tools.cdi.bot.test.util.ProjectUtil;
 import org.jboss.tools.cdi.seam3.bot.test.base.Seam3TestBase;
 import org.jboss.tools.cdi.seam3.bot.test.util.SeamLibrary;
 import org.jboss.tools.ui.bot.ext.helper.OpenOnHelper;
@@ -50,7 +51,7 @@ public class ResourceOpenOnTest extends Seam3TestBase {
 				CDIConstants.RESOURCE_ANNOTATION, "Open Resource", 
 				IDELabel.WebProjectsTree.BEANS_XML);
 		
-		editResourceUtil.moveFileInExplorerBase(
+		ProjectUtil.moveFileInExplorerBase(
 				packageExplorer, 
 				IDELabel.WebProjectsTree.BEANS_XML, 
 				projectName + "/" + IDELabel.WebProjectsTree.WEB_CONTENT + 

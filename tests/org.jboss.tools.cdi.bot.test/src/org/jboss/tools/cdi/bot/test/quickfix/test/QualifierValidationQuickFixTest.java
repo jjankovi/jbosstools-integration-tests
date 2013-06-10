@@ -13,10 +13,12 @@ package org.jboss.tools.cdi.bot.test.quickfix.test;
 
 
 import org.jboss.tools.cdi.bot.test.CDITestBase;
-import org.jboss.tools.cdi.bot.test.annotations.CDIWizardType;
-import org.jboss.tools.cdi.bot.test.annotations.ValidationType;
-import org.jboss.tools.cdi.bot.test.quickfix.validators.IValidationProvider;
-import org.jboss.tools.cdi.bot.test.quickfix.validators.QualifierValidationProvider;
+import org.jboss.tools.cdi.bot.test.annotations.ProblemsType;
+import org.jboss.tools.cdi.bot.test.creator.QualifierCreator;
+import org.jboss.tools.cdi.bot.test.creator.config.QualifierConfiguration;
+import org.jboss.tools.cdi.bot.test.creator.util.CDICreatorUtil;
+import org.jboss.tools.cdi.bot.test.util.AnnotationCreator;
+import org.jboss.tools.cdi.bot.test.util.QuickFixUtil;
 import org.junit.Test;
 
 /**
@@ -27,11 +29,24 @@ import org.junit.Test;
 
 public class QualifierValidationQuickFixTest extends CDITestBase {
 	
-	private static IValidationProvider validationProvider = new QualifierValidationProvider();
-
-	public IValidationProvider validationProvider() {
-		return validationProvider;
-	}
+	private static final String VALIDATION_PROBLEM_1 = "Qualifier annotation " + 
+		"type must be annotated with @Target";
+	private static final String VALIDATION_PROBLEM_2 = "Qualifier annotation " + 
+		"type must be annotated with @Retention(RUNTIME)";
+	private static final String VALIDATION_PROBLEM_3 = "Annotation-valued member " + 
+		"of a qualifier type should be annotated @Nonbinding";
+	private static final String VALIDATION_PROBLEM_4 = "Array-valued member " + 
+		"of a qualifier type should be annotated @Nonbinding";
+	private static final String QUICK_FIX_1 = 
+			"TYPE, METHOD, FIELD, PARAMETER";
+	private static final String QUICK_FIX_2 = 
+			"FIELD, PARAMETER";
+	private static final String QUICK_FIX_3 = 
+			"Change annotation";
+	private static final String QUICK_FIX_4 = 
+			"Add annotation @Retention(RUNTIME)";
+	private static final String QUICK_FIX_5 = 
+			"Add annotation @Nonbinding";
 	
 	// https://issues.jboss.org/browse/JBIDE-7630
 	@Test
@@ -39,17 +54,19 @@ public class QualifierValidationQuickFixTest extends CDITestBase {
 		
 		String className = "Qualifier1";
 		
-		wizard.createCDIComponent(CDIWizardType.QUALIFIER, className, getPackageName(), null);
+		newQualifier(getPackageName(), className);
 		
 		editResourceUtil.replaceInEditor("@Target({ TYPE, METHOD, PARAMETER, FIELD })", 
 				"@Target({ TYPE, FIELD })");
 		
-		quickFixHelper.checkQuickFix(ValidationType.TARGET, 
-				"@Target({TYPE, METHOD, FIELD, PARAMETER})", getProjectName(), validationProvider());
+		QuickFixUtil.performQuickFix(ProblemsType.WARNINGS, 
+				VALIDATION_PROBLEM_1, QUICK_FIX_1);
 		
 		editResourceUtil.replaceInEditor("@Target({TYPE, METHOD, FIELD, PARAMETER})", "");
 		
-		quickFixHelper.checkQuickFix(ValidationType.TARGET, getProjectName(), validationProvider());
+		QuickFixUtil.performQuickFix(ProblemsType.WARNINGS, 
+				VALIDATION_PROBLEM_1, QUICK_FIX_2);
+		
 	}
 	
 	// https://issues.jboss.org/browse/JBIDE-7631
@@ -58,15 +75,17 @@ public class QualifierValidationQuickFixTest extends CDITestBase {
 		
 		String className = "Qualifier2";
 
-		wizard.createCDIComponent(CDIWizardType.QUALIFIER, className, getPackageName(), null);
+		newQualifier(getPackageName(), className);
 				
 		editResourceUtil.replaceInEditor("@Retention(RUNTIME)", "@Retention(CLASS)");
 		
-		quickFixHelper.checkQuickFix(ValidationType.RETENTION, getProjectName(), validationProvider());
+		QuickFixUtil.performQuickFix(ProblemsType.WARNINGS, 
+				VALIDATION_PROBLEM_2, QUICK_FIX_3);
 		
 		editResourceUtil.replaceInEditor("@Retention(RUNTIME)", "");
 		
-		quickFixHelper.checkQuickFix(ValidationType.RETENTION, getProjectName(), validationProvider());
+		QuickFixUtil.performQuickFix(ProblemsType.WARNINGS, 
+				VALIDATION_PROBLEM_2, QUICK_FIX_4);
 		
 	}
 	
@@ -76,19 +95,33 @@ public class QualifierValidationQuickFixTest extends CDITestBase {
 	
 		String className = "Qualifier3";
 		
-		wizard.createAnnotation("AAnnotation", getPackageName());
-		wizard.createCDIComponentWithContent(CDIWizardType.QUALIFIER, className, 
-				getPackageName(), null, "/resources/quickfix/" +
-						"qualifier/QualifierWithAnnotation.java.cdi");
-	
+		AnnotationCreator.newAnnotation("AAnnotation", getPackageName());
+		newQualifier(getPackageName(), className, 
+			"/resources/quickfix/qualifier/QualifierWithAnnotation.java.cdi");
+		
 		editResourceUtil.replaceInEditor("QualifierComponent", className);
 	
-		quickFixHelper.checkQuickFix(ValidationType.NONBINDING, getProjectName(), validationProvider());
-				
+		QuickFixUtil.performQuickFix(ProblemsType.WARNINGS, 
+				VALIDATION_PROBLEM_3, QUICK_FIX_5);
+		
 		editResourceUtil.replaceClassContentByResource(QualifierValidationQuickFixTest.class
 				.getResourceAsStream("/resources/quickfix/qualifier/QualifierWithStringArray.java.cdi"), false);
 		editResourceUtil.replaceInEditor("QualifierComponent", className);
 		
-		quickFixHelper.checkQuickFix(ValidationType.NONBINDING, getProjectName(), validationProvider());
+		QuickFixUtil.performQuickFix(ProblemsType.WARNINGS, 
+				VALIDATION_PROBLEM_4, QUICK_FIX_5);
+		
+	}
+	
+	private void newQualifier(String packageName, String name) {
+		newQualifier(packageName, name, null);
+	}
+	
+	private void newQualifier(String packageName, String name, String resource) {
+		new QualifierCreator(new QualifierConfiguration()
+			.setPackageName(packageName)
+			.setName(name)).newQualifier();
+		if (resource != null) 
+			CDICreatorUtil.fillContentOfEditor(name + ".java", resource);
 	}
 }

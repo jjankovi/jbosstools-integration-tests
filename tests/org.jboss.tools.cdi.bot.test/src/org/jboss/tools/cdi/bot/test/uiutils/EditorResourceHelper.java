@@ -23,7 +23,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
 import org.jboss.tools.cdi.bot.test.editor.BeansEditorTest;
 import org.jboss.tools.ui.bot.ext.SWTBotExt;
 import org.jboss.tools.ui.bot.ext.SWTBotFactory;
@@ -31,11 +30,8 @@ import org.jboss.tools.ui.bot.ext.SWTJBTExt;
 import org.jboss.tools.ui.bot.ext.SWTTestExt;
 import org.jboss.tools.ui.bot.ext.SWTUtilExt;
 import org.jboss.tools.ui.bot.ext.Timing;
-import org.jboss.tools.ui.bot.ext.helper.TreeHelper;
 import org.jboss.tools.ui.bot.ext.parts.ContentAssistBot;
 import org.jboss.tools.ui.bot.ext.parts.SWTBotEditorExt;
-import org.jboss.tools.ui.bot.ext.types.IDELabel;
-import org.jboss.tools.ui.bot.ext.view.ExplorerBase;
 import org.jboss.tools.ui.bot.ext.view.ProjectExplorer;
 
 public class EditorResourceHelper {
@@ -172,101 +168,13 @@ public class EditorResourceHelper {
 		List<String> currentProposalList = contentAssist.getProposalList();
 		return currentProposalList;
 	}
-	
-	/**
-	 * in explorer base View, the file which is located in "sourceFolder" 
-	 * is moved to location "destFolder" 
-	 * @param file
-	 * @param sourceFolder
-	 * @param destFolder
-	 */
-	public void moveFileInExplorerBase(ExplorerBase explorerBase, 
-			String file, String sourceFolder, String destFolder) {
-		
-		explorerBase.selectTreeItem(file, sourceFolder.split("/"));		
-		
-		bot.menu(IDELabel.Menu.FILE).menu(IDELabel.Menu.MOVE).click();
-		bot.waitForShell(IDELabel.Shell.MOVE);
-		
-		SWTBotTree tree = bot.activeShell().bot().tree();	
-		tree.collapseNode(destFolder.split("/")[0]);		
-		
-		TreeHelper.expandNode(bot, destFolder.split("/")).select();		
-		
-		bot.button(IDELabel.Button.OK).click();		
-		util.waitForNonIgnoredJobs();
-	}
-	
-	/**
-	 * in explorer base View, the file which is located in "path" 
-	 * is renamed to newFileName value 
-	 * @param explorerBase
-	 * @param file
-	 * @param path
-	 * @param newFileName
-	 */
-	public void renameFileInExplorerBase(ExplorerBase explorerBase, 
-			String file, String path, String newFileName) {
-		
-		explorerBase.selectTreeItem(file, path.split("/"));		
-		
-		bot.menu(IDELabel.Menu.FILE).menu(IDELabel.Menu.RENAME_WITH_DOTS).click();
-		bot.waitForShell(IDELabel.Shell.RENAME_RESOURCE);
-		
-		bot.text().setText(newFileName);	
-		
-		bot.button(IDELabel.Button.OK).click();		
-		util.waitForNonIgnoredJobs();
-		
-	}
-	
-	/**
-	 * Method deletes whole package with given name for entered project
-	 * @param projectName
-	 * @param packageName
-	 */
-	public void deletePackage(String projectName, String packageName) {
-		if (projectExplorer.isFilePresent(projectName, "Java Resources", "JavaSource")) {	
-			String[] path = {projectName, "Java Resources", "JavaSource"};
-			deleteFolderInProjectExplorer(packageName, path);
-		}else {
-			String[] path = {projectName, "Java Resources", "src"};
-			deleteFolderInProjectExplorer(packageName, path);
-		}		
-	}
-	
-	/**
-	 * Method deletes whole web folder with given name for entered project
-	 * @param projectName
-	 * @param packageName
-	 */
-	public void deleteWebFolder(String projectName, String folder) {
-		
-		String[] path = {projectName, "WebContent"};
-		deleteFolderInProjectExplorer(folder, path);
-		
-	}
-	
-	/**
-	 * Method deletes folder with given name and path
-	 * @param folderName
-	 * @param path
-	 */
-	public void deleteFolderInProjectExplorer(String folderName, String... path) {
-				
-		projectExplorer.selectTreeItem(folderName, path); 				
-		
-		bot.menu(IDELabel.Menu.EDIT).menu(IDELabel.Menu.DELETE).click();
-		bot.waitForShell(IDELabel.Shell.CONFIRM_DELETE);
-		bot.shell(IDELabel.Shell.CONFIRM_DELETE).bot().button(IDELabel.Button.OK).click();
-		util.waitForNonIgnoredJobs();
-	}
 
 	/**
 	 * Methods converts input stream to string component
 	 * @param inputStream
 	 * @return String - input stream converted to string
 	 */
+	@SuppressWarnings("resource")
 	public String readStream(InputStream inputStream) {
 		// we don't care about performance in tests too much, so this should be
 		// OK

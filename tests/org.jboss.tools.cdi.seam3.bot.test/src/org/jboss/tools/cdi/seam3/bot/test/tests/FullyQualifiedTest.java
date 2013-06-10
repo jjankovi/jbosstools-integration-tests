@@ -14,10 +14,10 @@ package org.jboss.tools.cdi.seam3.bot.test.tests;
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
 import org.jboss.tools.cdi.bot.test.CDIConstants;
 import org.jboss.tools.cdi.bot.test.annotations.ProblemsType;
-import org.jboss.tools.cdi.bot.test.uiutils.CollectionsUtil;
+import org.jboss.tools.cdi.bot.test.util.CollectionsUtil;
+import org.jboss.tools.cdi.bot.test.util.QuickFixUtil;
 import org.jboss.tools.cdi.seam3.bot.test.base.SolderAnnotationTestBase;
 import org.jboss.tools.cdi.seam3.bot.test.util.SeamLibrary;
 import org.junit.After;
@@ -109,18 +109,13 @@ public class FullyQualifiedTest extends SolderAnnotationTestBase {
 		packageExplorer.openFile(projectName, CDIConstants.SRC, 
 				getPackageName(), myBean1).toTextEditor();
 		
-		SWTBotTreeItem[] validationProblems = quickFixHelper.getProblems(
-				ProblemsType.ERRORS, projectName);
-		assertTrue(validationProblems.length > 0);
-		assertTrue(validationProblems.length == 1);
-		assertTrue(validationProblems[0].getText().contains("cannot be resolved to a type"));
+		QuickFixUtil.waitForProblem(ProblemsType.ERRORS, 
+				"cannot be resolved to a type");
 		
 		editResourceUtil.replaceInEditor("cdi.test.MyBean1", "cdi.seam.MyBean2");
-		validationProblems = quickFixHelper.getProblems(
-				ProblemsType.ERRORS, projectName);
-		assertTrue(validationProblems.length > 0);
-		assertTrue(validationProblems.length == 1);
-		assertTrue(validationProblems[0].getText().contains("cannot be resolved to a type"));
+		
+		QuickFixUtil.waitForProblem(ProblemsType.ERRORS, 
+				"cannot be resolved to a type");
 		
 	}
 

@@ -12,6 +12,7 @@
 package org.jboss.tools.cdi.bot.test.wizard;
 
 import org.jboss.tools.cdi.bot.test.CDITestBase;
+import org.jboss.tools.cdi.bot.test.util.ProjectUtil;
 import org.junit.After;
 import org.junit.Test;
 
@@ -19,8 +20,8 @@ public class DynamicWebProjectWithCDITest extends CDITestBase {
 	
 	@Override	
 	public void prepareWorkspace() {
-		if (!projectHelper.projectExists(getProjectName())) {
-			projectHelper.createDynamicWebProject(getProjectName());
+		if (!ProjectUtil.projectExists(getProjectName())) {
+			ProjectUtil.newDynamicWebProject(getProjectName());
 		}
 	}
 	
@@ -36,18 +37,14 @@ public class DynamicWebProjectWithCDITest extends CDITestBase {
 	
 	@Test
 	public void testAddCDISupportWithOKButton() {
-		
-		projectHelper.addCDISupport(getProjectName());
-		assertTrue(projectHelper.checkCDISupport(getProjectName()));
-		
+		ProjectUtil.addCDISupport(getProjectName());
+		assertTrue(ProjectUtil.checkCDISupport(getProjectName()));
 	}
 	
 	@Test
 	public void testAddCDISupportWithEnterKey() {
-		
-		projectHelper.addCDISupportWithEnterKey(getProjectName());
-		assertTrue(projectHelper.checkCDISupport(getProjectName()));
-		
+		ProjectUtil.addCDISupportWithEnterKey(getProjectName());
+		assertTrue(ProjectUtil.checkCDISupport(getProjectName()));
 	}
 
 }

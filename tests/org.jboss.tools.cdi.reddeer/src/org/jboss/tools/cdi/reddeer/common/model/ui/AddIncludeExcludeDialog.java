@@ -5,7 +5,7 @@ import org.jboss.reddeer.swt.impl.button.CheckBox;
 import org.jboss.reddeer.swt.impl.button.PushButton;
 import org.jboss.reddeer.swt.impl.button.RadioButton;
 import org.jboss.reddeer.swt.impl.shell.DefaultShell;
-import org.jboss.reddeer.swt.impl.text.LabeledText;
+import org.jboss.reddeer.swt.impl.text.DefaultText;
 import org.jboss.reddeer.swt.wait.WaitWhile;
 
 /**
@@ -24,14 +24,13 @@ public class AddIncludeExcludeDialog extends DefaultShell {
 	public void include() {
 		new RadioButton("include").click();
 	}
-	
-	/** not WORKING cause an upstream issue with RadioButton click **/
+
 	public void exclude() {
 		new RadioButton("exclude").click();
 	}
 	
 	public void setName(String name) {
-		new LabeledText("Name:*").setText(name);
+		new DefaultText(0).setText(name);
 	}
 	
 	public void setRegularExpressionState(boolean isRegular) {

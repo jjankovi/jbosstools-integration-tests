@@ -14,9 +14,12 @@ package org.jboss.tools.cdi.bot.test.named;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.jboss.tools.cdi.bot.test.annotations.CDIWizardType;
+import org.jboss.tools.cdi.bot.test.creator.BeanCreator;
+import org.jboss.tools.cdi.bot.test.creator.config.BeanConfiguration;
+import org.jboss.tools.cdi.bot.test.creator.util.CDICreatorUtil;
 import org.jboss.tools.cdi.bot.test.jsf.JSFTestBase;
-import org.jboss.tools.cdi.bot.test.uiutils.CollectionsUtil;
+import org.jboss.tools.cdi.bot.test.util.CollectionsUtil;
+import org.jboss.tools.cdi.bot.test.util.ProjectUtil;
 import org.junit.After;
 import org.junit.Test;
 
@@ -38,16 +41,20 @@ public class NamedRefactoringTest extends JSFTestBase {
 
 	@After
 	public void waitForJobs() {
-		editResourceUtil.deletePackage(getProjectName(), getPackageName());
-		editResourceUtil.deleteWebFolder(getProjectName(), WEB_FOLDER);
+		ProjectUtil.deletePackage(getProjectName(), getPackageName());
+		ProjectUtil.deleteWebFolder(getProjectName(), WEB_FOLDER);
 	}
 	
 	@Test
 	public void testNamedAnnotationWithParamRefactor() {
 				
-		wizard.createCDIComponentWithContent(CDIWizardType.BEAN, MANAGED_BEAN_1, 
-				getPackageName(), null, "/resources/jsf/ManagedBeanParamNamed.java.cdi");		
-		
+		new BeanCreator(new BeanConfiguration()
+			.setPackageName(getPackageName())
+			.setName(MANAGED_BEAN_1)).newBean();
+		CDICreatorUtil.fillContentOfEditor(
+				MANAGED_BEAN_1 + ".java", 
+				"/resources/jsf/ManagedBeanParamNamed.java.cdi");
+	
 		createXHTMLPageWithContent(INDEX_XHTML_1, "/resources/jsf/index1.xhtml.cdi");
 		createXHTMLPageWithContent(INDEX_XHTML_3, "/resources/jsf/index3.xhtml.cdi");
 	
@@ -78,8 +85,13 @@ public class NamedRefactoringTest extends JSFTestBase {
 	@Test
 	public void testNamedAnnotationWithoutParamRefactor() {
 		
-		wizard.createCDIComponentWithContent(CDIWizardType.BEAN, MANAGED_BEAN_2, 
-				getPackageName(), null, "/resources/jsf/ManagedBeanNoParamNamed.java.cdi");	
+		new BeanCreator(new BeanConfiguration()
+			.setPackageName(getPackageName())
+			.setName(MANAGED_BEAN_2)).newBean();
+		CDICreatorUtil.fillContentOfEditor(
+			MANAGED_BEAN_2 + ".java", 
+			"/resources/jsf/ManagedBeanNoParamNamed.java.cdi");
+
 		
 		createXHTMLPageWithContent(INDEX_XHTML_2, "/resources/jsf/index2.xhtml.cdi");
 		createXHTMLPageWithContent(INDEX_XHTML_3, "/resources/jsf/index3.xhtml.cdi");
@@ -110,9 +122,13 @@ public class NamedRefactoringTest extends JSFTestBase {
 	@Test
 	public void testNamedAnnotationWithoutELRefactoring() {
 		
-		wizard.createCDIComponentWithContent(CDIWizardType.BEAN, MANAGED_BEAN_2, 
-				getPackageName(), null, "/resources/jsf/ManagedBeanNoParamNamed.java.cdi");	
-		
+		new BeanCreator(new BeanConfiguration()
+			.setPackageName(getPackageName())
+			.setName(MANAGED_BEAN_2)).newBean();
+		CDICreatorUtil.fillContentOfEditor(
+			MANAGED_BEAN_2 + ".java", 
+			"/resources/jsf/ManagedBeanNoParamNamed.java.cdi");
+
 		createXHTMLPageWithContent(INDEX_XHTML_2, "/resources/jsf/index1.xhtml.cdi");		
 			
 		Collection<String> affectedFiles = changeNamedAnnotation(MANAGED_BEAN_2, NEW_NAMED_PARAM);

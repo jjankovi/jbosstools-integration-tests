@@ -5,6 +5,11 @@ import org.jboss.reddeer.swt.condition.WaitCondition;
 import org.jboss.tools.ui.bot.ext.SWTBotExt;
 import org.jboss.tools.ui.bot.ext.SWTBotFactory;
 
+/**
+ * 
+ * @author jjankovi
+ *
+ */
 public class OpenedEditorHasTitleCondition implements WaitCondition {
 
 	private String title;

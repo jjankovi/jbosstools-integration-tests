@@ -13,10 +13,11 @@ package org.jboss.tools.cdi.bot.test.quickfix.test;
 
 
 import org.jboss.tools.cdi.bot.test.CDITestBase;
-import org.jboss.tools.cdi.bot.test.annotations.CDIWizardType;
-import org.jboss.tools.cdi.bot.test.annotations.ValidationType;
-import org.jboss.tools.cdi.bot.test.quickfix.validators.BeanValidationProvider;
-import org.jboss.tools.cdi.bot.test.quickfix.validators.IValidationProvider;
+import org.jboss.tools.cdi.bot.test.annotations.ProblemsType;
+import org.jboss.tools.cdi.bot.test.creator.BeanCreator;
+import org.jboss.tools.cdi.bot.test.creator.config.BeanConfiguration;
+import org.jboss.tools.cdi.bot.test.creator.util.CDICreatorUtil;
+import org.jboss.tools.cdi.bot.test.util.QuickFixUtil;
 import org.junit.Test;
 
 /**
@@ -27,11 +28,28 @@ import org.junit.Test;
 
 public class BeanValidationQuickFixTest extends CDITestBase {
 	
-	private static IValidationProvider validationProvider = new BeanValidationProvider();
+	private static final String VALIDATION_PROBLEM_1 = "which " + 
+		"declares a passivating scope SessionScoped";
+	private static final String VALIDATION_PROBLEM_2 = "Bean " + 
+		"constructor cannot have a parameter annotated @Disposes";
+	private static final String VALIDATION_PROBLEM_3 = "Bean " + 
+		"constructor cannot have a parameter annotated @Observes";
+	private static final String VALIDATION_PROBLEM_4 = "Producer " + 
+		"method has a parameter annotated @Disposes";
+	private static final String VALIDATION_PROBLEM_5 = "Producer " + 
+		"method has a parameter annotated @Observes";
+	private static final String VALIDATION_PROBLEM_6 = "Disposer " + 
+		"method cannot be annotated @Inject";
+	private static final String VALIDATION_PROBLEM_7 = "Observer " + 
+		"method cannot be annotated @Inject";
+	private static final String VALIDATION_PROBLEM_8 = "Producer " + 
+		"method or field cannot be annotated @Inject";
+	private static final String VALIDATION_PROBLEM_9 = "Observer " + 
+		"method has a parameter annotated @Disposes";
 	
-	public IValidationProvider validationProvider() {
-		return validationProvider;
-	}
+	private static final String QUICK_FIX_1 = "Add " + 
+		"java.io.Serializable interface to class";
+	private static final String QUICK_FIX_2 = "Delete annotation";
 	
 	// https://issues.jboss.org/browse/JBIDE-8550
 	@Test
@@ -39,11 +57,12 @@ public class BeanValidationQuickFixTest extends CDITestBase {
 		
 		String className = "ManagedBean";
 		
-		wizard.createCDIComponentWithContent(CDIWizardType.BEAN, className, 
-				getPackageName(), null, "/resources/quickfix/bean/SerializableBean.java.cdi");
+		newBeanWithContent(getPackageName(), className, 
+				"/resources/quickfix/bean/SerializableBean.java.cdi");
 		editResourceUtil.replaceInEditor("BeanComponent", className);		
 		
-		quickFixHelper.checkQuickFix(ValidationType.SERIALIZABLE, getProjectName(), validationProvider());
+		QuickFixUtil.performQuickFix(ProblemsType.WARNINGS, 
+				VALIDATION_PROBLEM_1, QUICK_FIX_1);
 		
 	}
 	
@@ -53,11 +72,12 @@ public class BeanValidationQuickFixTest extends CDITestBase {
 		
 		String className = "Bean1";
 		
-		wizard.createCDIComponentWithContent(CDIWizardType.BEAN, className, 
-				getPackageName(), null, "/resources/quickfix/bean/ConstructorWithParam.java.cdi");		
+		newBeanWithContent(getPackageName(), className, 
+				"/resources/quickfix/bean/ConstructorWithParam.java.cdi");
 		editResourceUtil.replaceInEditor("BeanComponent", className);		
 		
-		quickFixHelper.checkQuickFix(ValidationType.DISPOSES, getProjectName(), validationProvider());
+		QuickFixUtil.performQuickFix(ProblemsType.ERRORS, 
+				VALIDATION_PROBLEM_2, QUICK_FIX_2);
 		
 		editResourceUtil.replaceClassContentByResource(BeanValidationQuickFixTest.class
 				.getResourceAsStream("/resources/quickfix/bean/ConstructorWithParam.java.cdi"), false);
@@ -67,7 +87,9 @@ public class BeanValidationQuickFixTest extends CDITestBase {
 				"import javax.enterprise.event.Observes;");
 		editResourceUtil.replaceInEditor("BeanComponent", className);		
 		
-		quickFixHelper.checkQuickFix(ValidationType.OBSERVES, getProjectName(), validationProvider());
+		QuickFixUtil.performQuickFix(ProblemsType.ERRORS, 
+				VALIDATION_PROBLEM_3, QUICK_FIX_2);
+		
 	}
 	
 	// https://issues.jboss.org/browse/JBIDE-7665
@@ -76,12 +98,13 @@ public class BeanValidationQuickFixTest extends CDITestBase {
 		
 		String className = "Bean2";
 		
-		wizard.createCDIComponentWithContent(CDIWizardType.BEAN, className, 
-				getPackageName(), null, "/resources/quickfix/bean/ProducerWithParam.java.cdi");
+		newBeanWithContent(getPackageName(), className, 
+				"/resources/quickfix/bean/ProducerWithParam.java.cdi");
 		
 		editResourceUtil.replaceInEditor("BeanComponent", className);
 		
-		quickFixHelper.checkQuickFix(ValidationType.DISPOSES, getProjectName(), validationProvider());
+		QuickFixUtil.performQuickFix(ProblemsType.ERRORS, 
+				VALIDATION_PROBLEM_4, QUICK_FIX_2);
 		
 		editResourceUtil.replaceClassContentByResource(BeanValidationQuickFixTest.class
 				.getResourceAsStream("/resources/quickfix/bean/ProducerWithParam.java.cdi"), false);
@@ -91,7 +114,8 @@ public class BeanValidationQuickFixTest extends CDITestBase {
 		editResourceUtil.replaceInEditor("import javax.enterprise.inject.Disposes;", 
 				"import javax.enterprise.event.Observes;");
 		
-		quickFixHelper.checkQuickFix(ValidationType.OBSERVES, getProjectName(), validationProvider());
+		QuickFixUtil.performQuickFix(ProblemsType.ERRORS, 
+				VALIDATION_PROBLEM_5, QUICK_FIX_2);
 		
 	}
 	
@@ -101,12 +125,12 @@ public class BeanValidationQuickFixTest extends CDITestBase {
 			
 		String className = "Bean3";
 		
-		wizard.createCDIComponentWithContent(CDIWizardType.BEAN, className, 
-				getPackageName(), null, "/resources/quickfix/bean/BeanInjectDisposes.java.cdi");
-		
+		newBeanWithContent(getPackageName(), className, 
+				"/resources/quickfix/bean/BeanInjectDisposes.java.cdi");
 		editResourceUtil.replaceInEditor("BeanComponent", className);
 		
-		quickFixHelper.checkQuickFix(ValidationType.DISPOSES, getProjectName(), validationProvider());
+		QuickFixUtil.performQuickFix(ProblemsType.ERRORS, 
+				VALIDATION_PROBLEM_6, QUICK_FIX_2);
 				
 	}
 	
@@ -116,15 +140,16 @@ public class BeanValidationQuickFixTest extends CDITestBase {
 		
 		String className = "Bean4";
 		
-		wizard.createCDIComponentWithContent(CDIWizardType.BEAN, className, 
-				getPackageName(), null, "/resources/quickfix/bean/BeanInjectDisposes.java.cdi");
+		newBeanWithContent(getPackageName(), className, 
+				"/resources/quickfix/bean/BeanInjectDisposes.java.cdi");
 		
 		editResourceUtil.replaceInEditor("import javax.enterprise.inject.Disposes;", 
 				"import javax.enterprise.event.Observes;");
 		editResourceUtil.replaceInEditor("@Disposes", "@Observes");
 		editResourceUtil.replaceInEditor("BeanComponent", className);
 		
-		quickFixHelper.checkQuickFix(ValidationType.OBSERVES, getProjectName(), validationProvider());
+		QuickFixUtil.performQuickFix(ProblemsType.ERRORS, 
+				VALIDATION_PROBLEM_7, QUICK_FIX_2);
 		
 	}
 	
@@ -134,13 +159,14 @@ public class BeanValidationQuickFixTest extends CDITestBase {
 		
 		String className = "Bean5";
 		
-		wizard.createCDIComponentWithContent(CDIWizardType.BEAN, className, 
-				getPackageName(), null, "/resources/quickfix/bean/BeanInjectProducer.java.cdi");
+		newBeanWithContent(getPackageName(), className, 
+				"/resources/quickfix/bean/BeanInjectProducer.java.cdi");
 		
 		editResourceUtil.replaceInEditor("BeanComponent", className);
 			
-		quickFixHelper.checkQuickFix(ValidationType.PRODUCES, getProjectName(), validationProvider());
-			
+		QuickFixUtil.performQuickFix(ProblemsType.ERRORS, 
+				VALIDATION_PROBLEM_8, QUICK_FIX_2);
+		
 	}
 	
 	// https://issues.jboss.org/browse/JBIDE-7668
@@ -149,13 +175,21 @@ public class BeanValidationQuickFixTest extends CDITestBase {
 			
 		String className = "Bean6";
 		
-		wizard.createCDIComponentWithContent(CDIWizardType.BEAN, className, 
-				getPackageName(), null, "/resources/quickfix/bean/ObserverWithDisposer.java.cdi");
+		newBeanWithContent(getPackageName(), className, 
+				"/resources/quickfix/bean/ObserverWithDisposer.java.cdi");
 		
 		editResourceUtil.replaceInEditor("BeanComponent", className);
+		
+		QuickFixUtil.performQuickFix(ProblemsType.ERRORS, 
+				VALIDATION_PROBLEM_9, QUICK_FIX_2);
 			
-		quickFixHelper.checkQuickFix(ValidationType.OBSERVES, getProjectName(), validationProvider());
-			
+	}
+	
+	private void newBeanWithContent(String packageName, String name, String resource) {
+		new BeanCreator(new BeanConfiguration()
+			.setPackageName(packageName)
+			.setName(name)).newBean();
+		CDICreatorUtil.fillContentOfEditor(name + ".java", resource);
 	}
 	
 }

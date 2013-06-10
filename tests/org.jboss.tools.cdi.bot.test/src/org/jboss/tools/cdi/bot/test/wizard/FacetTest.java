@@ -11,26 +11,22 @@
 
 package org.jboss.tools.cdi.bot.test.wizard;
 
-import org.jboss.tools.cdi.bot.test.CDIAllBotTests;
 import org.jboss.tools.cdi.bot.test.CDIConstants;
-import org.jboss.tools.cdi.bot.test.CDISmokeBotTests;
 import org.jboss.tools.cdi.bot.test.CDITestBase;
+import org.jboss.tools.cdi.bot.test.util.ProjectUtil;
 import org.junit.Test;
-import org.junit.runners.Suite.SuiteClasses;
 
 /**
 * Test checks if beans.xml is created when selecting CDI Facet
 * 
 * @author Jaroslav Jankovic
 */
-
-@SuiteClasses({ CDIAllBotTests.class , CDISmokeBotTests.class })
 public class FacetTest extends CDITestBase {
 	
 	@Override	
 	public void prepareWorkspace() {
-		if (!projectHelper.projectExists(getProjectName())) {
-			projectHelper.createDynamicWebProjectWithCDIFacets(getProjectName());			
+		if (!ProjectUtil.projectExists(getProjectName())) {
+			ProjectUtil.newDynamicWebProjectWithCDIFacets(getProjectName());			
 		}
 	}
 	
@@ -41,14 +37,9 @@ public class FacetTest extends CDITestBase {
 	
 	@Test
 	public void testCDIFacet() {
-		if (projectHelper.projectExists(getProjectName())) {
-			LOGGER.info("Dynamic Web Project with CDI Facet created");			
-			assertTrue("Error: beans.xml should be created when selecting CDI Facet", 
-					packageExplorer.isFilePresent(getProjectName(), 
-							CDIConstants.WEB_INF_BEANS_XML_PATH.split("/")));			
-		}else {
-			fail("CDI project was not succesfully created with Dynamic Web Project wizard with CDI facet");
-		}
+		assertTrue("Error: beans.xml should be created when selecting CDI Facet", 
+				packageExplorer.isFilePresent(getProjectName(), 
+				CDIConstants.WEB_INF_BEANS_XML_PATH.split("/")));			
 		
 	}
 		

@@ -11,35 +11,30 @@
 
 package org.jboss.tools.cdi.bot.test.condition;
 
-import org.eclipse.swtbot.swt.finder.SWTBot;
-import org.eclipse.swtbot.swt.finder.waits.ICondition;
-import org.jboss.tools.cdi.bot.test.uiutils.AsYouTypeValidationHelper;
+import org.jboss.reddeer.swt.condition.WaitCondition;
+import org.jboss.tools.cdi.bot.test.util.AsYouTypeValidationUtil;
 
-public class AsYouTypeMarkerExistsCondition implements ICondition {
+/**
+ * 
+ * @author jjankovi
+ *
+ */
+public class AsYouTypeMarkerExistsCondition implements WaitCondition {
 
-	private AsYouTypeValidationHelper helper = new AsYouTypeValidationHelper();
-	
 	private String message;
-	
-	public AsYouTypeMarkerExistsCondition() {
-		this(null);
-	}
 	
 	public AsYouTypeMarkerExistsCondition(String message) {
 		this.message = message;
 	}
 	
-	public boolean test() throws Exception {
-		return helper.markerExists(helper.getAnnotationModel(), null, message);
+	public boolean test() {
+		return AsYouTypeValidationUtil.markerExists(
+			AsYouTypeValidationUtil.getAnnotationModel(), null, message);
 	}
 
-	public void init(SWTBot bot) {
-		// nothing do here
-	}
-
-	public String getFailureMessage() {
+	public String description() {
 		return "No as-you-type marker exists in '" + 
-				helper.getActiveTextEditor().getTitle() + "'";
+				AsYouTypeValidationUtil.getActiveTextEditor().getTitle() + "'";
 	}
 
 }

@@ -11,10 +11,20 @@
 
 package org.jboss.tools.cdi.bot.test.beansxml;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.tools.cdi.bot.test.CDIConstants;
-import org.jboss.tools.cdi.bot.test.annotations.CDIWizardType;
-import org.jboss.tools.cdi.bot.test.annotations.ValidationType;
+import org.jboss.tools.cdi.bot.test.annotations.ProblemsType;
+import org.jboss.tools.cdi.bot.test.creator.BeanCreator;
+import org.jboss.tools.cdi.bot.test.creator.DecoratorCreator;
+import org.jboss.tools.cdi.bot.test.creator.InterceptorCreator;
+import org.jboss.tools.cdi.bot.test.creator.config.BeanConfiguration;
+import org.jboss.tools.cdi.bot.test.creator.config.DecoratorConfiguration;
+import org.jboss.tools.cdi.bot.test.creator.config.InterceptorConfiguration;
 import org.jboss.tools.cdi.bot.test.quickfix.base.BeansXMLQuickFixTestBase;
+import org.jboss.tools.cdi.bot.test.util.BeansXMLUtil;
+import org.jboss.tools.cdi.bot.test.util.QuickFixUtil;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -24,11 +34,14 @@ import org.junit.Test;
  * @author Jaroslav Jankovic
  * 
  */
-
 public class BeansXMLValidationTest extends BeansXMLQuickFixTestBase {
 
 	private static final String someBean = "Bean1";
 	private static final String nonExistingPackage = "somePackage";
+	private static final String VALIDATION_PROBLEM_1 = "There is no class";
+	private static final String VALIDATION_PROBLEM_2 = "is not an interceptor class";
+	private static final String VALIDATION_PROBLEM_3 = "is not a decorator bean class";
+	private static final String VALIDATION_PROBLEM_4 = "is not an alternative bean class";
 	
 	@BeforeClass
 	public static void setup() {
@@ -38,8 +51,7 @@ public class BeansXMLValidationTest extends BeansXMLQuickFixTestBase {
 	@Test
 	public void testEmptyBeansXMLValidation() {
 		
-		beansHelper.createEmptyBeansXML(getProjectName());		
-			
+		BeansXMLUtil.createEmptyBeansXML(getProjectName());		
 		assertTrue(isBeanXMLValidationErrorEmpty());
 		
 	}
@@ -52,23 +64,26 @@ public class BeansXMLValidationTest extends BeansXMLQuickFixTestBase {
 		if (!projectExplorer.isFilePresent(getProjectName(),  
 				(CDIConstants.JAVA_RESOURCES_SRC_FOLDER + getPackageName() + 
 				"/" + someBean + ".java").split("/"))) {
-			wizard.createCDIComponent(CDIWizardType.BEAN, someBean, getPackageName(), null);
+			new BeanCreator(new BeanConfiguration()
+				.setPackageName(getPackageName())
+				.setName(someBean)).newBean();
 		}
 		
-		wizard.createCDIComponent(CDIWizardType.INTERCEPTOR, className, getPackageName(), null);
-
-		beansHelper.createBeansXMLWithInterceptor(getProjectName(), getPackageName(), className);
+		new InterceptorCreator(new InterceptorConfiguration()
+			.setPackageName(getPackageName())
+			.setName(className)).newInterceptor();
+		
+		BeansXMLUtil.createBeansXMLWithInterceptor(
+				getProjectName(), getPackageName(), className);
 		assertTrue(isBeanXMLValidationErrorEmpty());
 		
-		beansHelper.createBeansXMLWithInterceptor(getProjectName(), nonExistingPackage, className);
-		assertFalse(isBeanXMLValidationErrorEmpty());
-		assertNotNull(quickFixHelper.getProblem(ValidationType.NO_CLASS, 
-				getProjectName(), getValidationProvider()));
+		BeansXMLUtil.createBeansXMLWithInterceptor(
+				getProjectName(), nonExistingPackage, className);
+		QuickFixUtil.waitForProblem(ProblemsType.ERRORS, VALIDATION_PROBLEM_1);
 		
-		beansHelper.createBeansXMLWithInterceptor(getProjectName(), getPackageName(), someBean);
-		assertFalse(isBeanXMLValidationErrorEmpty());
-		assertNotNull(quickFixHelper.getProblem(ValidationType.NO_INTERCEPTOR, 
-				getProjectName(), getValidationProvider()));
+		BeansXMLUtil.createBeansXMLWithInterceptor(
+				getProjectName(), getPackageName(), someBean);
+		QuickFixUtil.waitForProblem(ProblemsType.ERRORS, VALIDATION_PROBLEM_2);
 		
 	}
 	
@@ -80,23 +95,27 @@ public class BeansXMLValidationTest extends BeansXMLQuickFixTestBase {
 		if (!projectExplorer.isFilePresent(getProjectName(),  
 				(CDIConstants.JAVA_RESOURCES_SRC_FOLDER + getPackageName() + 
 				"/" + someBean + ".java").split("/"))) {
-			wizard.createCDIComponent(CDIWizardType.BEAN, someBean, getPackageName(), null);
+			new BeanCreator(new BeanConfiguration()
+				.setPackageName(getPackageName())
+				.setName(someBean)).newBean();
 		}
 		
-		wizard.createCDIComponent(CDIWizardType.DECORATOR, className, getPackageName(), "java.util.Set");
-
-		beansHelper.createBeansXMLWithDecorator(getProjectName(), getPackageName(), className);
+		List<String> interfaces = new ArrayList<String>();
+		interfaces.add("java.util.Set");
+		new DecoratorCreator(new DecoratorConfiguration()
+			.setPackageName(getPackageName())
+			.setName(className)
+			.setDecoratedInterfaces(interfaces)).newDecorator();
+		
+		BeansXMLUtil.createBeansXMLWithDecorator(getProjectName(), getPackageName(), className);
 		assertTrue(isBeanXMLValidationErrorEmpty());
 		
-		beansHelper.createBeansXMLWithDecorator(getProjectName(), nonExistingPackage, className);
-		assertFalse(isBeanXMLValidationErrorEmpty());
-		assertNotNull(quickFixHelper.getProblem(ValidationType.NO_CLASS, 
-				getProjectName(), getValidationProvider()));
+		BeansXMLUtil.createBeansXMLWithDecorator(getProjectName(), nonExistingPackage, className);
+		QuickFixUtil.waitForProblem(ProblemsType.ERRORS, VALIDATION_PROBLEM_1);
 		
-		beansHelper.createBeansXMLWithDecorator(getProjectName(), getPackageName(), someBean);
-		assertFalse(isBeanXMLValidationErrorEmpty());
-		assertNotNull(quickFixHelper.getProblem(ValidationType.NO_DECORATOR, 
-				getProjectName(), getValidationProvider()));
+		BeansXMLUtil.createBeansXMLWithDecorator(getProjectName(), getPackageName(), someBean);
+		QuickFixUtil.waitForProblem(ProblemsType.ERRORS, VALIDATION_PROBLEM_3);
+		
 	}
 	
 	@Test
@@ -107,23 +126,24 @@ public class BeansXMLValidationTest extends BeansXMLQuickFixTestBase {
 		if (!projectExplorer.isFilePresent(getProjectName(),  
 				(CDIConstants.JAVA_RESOURCES_SRC_FOLDER + getPackageName() + 
 				"/" + someBean + ".java").split("/"))) {
-			wizard.createCDIComponent(CDIWizardType.BEAN, someBean, getPackageName(), null);
+			new BeanCreator(new BeanConfiguration()
+				.setPackageName(getPackageName())
+				.setName(someBean)).newBean();
 		}
 		
-		wizard.createCDIComponent(CDIWizardType.BEAN, className, getPackageName(), "alternative");
-
-		beansHelper.createBeansXMLWithAlternative(getProjectName(), getPackageName(), className);
+		new BeanCreator(new BeanConfiguration()
+			.setPackageName(getPackageName())
+			.setName(className)
+			.setAlternative(true)).newBean();
+		
+		BeansXMLUtil.createBeansXMLWithAlternative(getProjectName(), getPackageName(), className);
 		assertTrue(isBeanXMLValidationErrorEmpty());
 		
-		beansHelper.createBeansXMLWithAlternative(getProjectName(), nonExistingPackage, className);
-		assertFalse(isBeanXMLValidationErrorEmpty());
-		assertNotNull(quickFixHelper.getProblem(ValidationType.NO_CLASS, 
-				getProjectName(), getValidationProvider()));
+		BeansXMLUtil.createBeansXMLWithAlternative(getProjectName(), nonExistingPackage, className);
+		QuickFixUtil.waitForProblem(ProblemsType.ERRORS, VALIDATION_PROBLEM_1);
 		
-		beansHelper.createBeansXMLWithAlternative(getProjectName(), getPackageName(), someBean);
-		assertFalse(isBeanXMLValidationErrorEmpty());
-		assertNotNull(quickFixHelper.getProblem(ValidationType.NO_ALTERNATIVE, 
-				getProjectName(), getValidationProvider()));
+		BeansXMLUtil.createBeansXMLWithAlternative(getProjectName(), getPackageName(), someBean);
+		QuickFixUtil.waitForProblem(ProblemsType.ERRORS, VALIDATION_PROBLEM_4);
 		
 	}
 	

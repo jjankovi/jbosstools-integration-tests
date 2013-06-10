@@ -22,11 +22,14 @@ import org.jboss.tools.cdi.bot.test.CDIConstants;
 import org.jboss.tools.cdi.bot.test.CDITestBase;
 import org.jboss.tools.cdi.bot.test.annotations.JSFEnvironment;
 import org.jboss.tools.cdi.bot.test.annotations.JSFTemplate;
-import org.jboss.tools.cdi.bot.test.uiutils.actions.NewJSFProjectWizard;
 import org.jboss.tools.cdi.bot.test.uiutils.actions.NewXHTMLFileWizard;
-import org.jboss.tools.cdi.bot.test.uiutils.wizards.CDIRefactorWizard;
 import org.jboss.tools.cdi.bot.test.uiutils.wizards.XHTMLDialogWizard;
+import org.jboss.tools.cdi.bot.test.util.ProjectUtil;
+import org.jboss.tools.cdi.reddeer.cdi.ui.RenameNamedBeanWizardDialog;
+import org.jboss.tools.cdi.reddeer.cdi.ui.RenameNamedBeanWizardFirstPage;
+import org.jboss.tools.cdi.reddeer.cdi.ui.RenameNamedBeanWizardSecondPage;
 import org.jboss.tools.ui.bot.ext.SWTJBTExt;
+import org.jboss.tools.ui.bot.ext.Timing;
 import org.jboss.tools.ui.bot.ext.helper.ContextMenuHelper;
 import org.jboss.tools.ui.bot.ext.types.IDELabel;
 import org.junit.Before;
@@ -49,8 +52,9 @@ public class JSFTestBase extends CDITestBase {
 	@Before
 	public void checkAndCreateProject() {
 		
-		if (!projectHelper.projectExists(getProjectName())) {
-			createJSFProjectWithCDISupport(getProjectName(), getEnv(), getTemplate());
+		if (!ProjectUtil.projectExists(getProjectName())) {
+			ProjectUtil.newJSFProjectWithCDISupport(
+					getProjectName(), getEnv(), getTemplate());
 		}
 		
 	}
@@ -93,7 +97,6 @@ public class JSFTestBase extends CDITestBase {
 					"' Named Bean ";
 		openContextMenuForTextInEditor(text, bot.editorByTitle(className + ".java"), 
 				IDELabel.Menu.CDI_REFACTOR, renameContextMenuText);
-		bot.waitForShell("Refactoring");	
 	}
 	
 	/**
@@ -161,11 +164,18 @@ public class JSFTestBase extends CDITestBase {
 		try {
 			openContextMenuForCDIRefactor(className);
 			
-			CDIRefactorWizard cdiRefactorWizard = new CDIRefactorWizard();
-			cdiRefactorWizard = cdiRefactorWizard.setName(newNamed);
-			cdiRefactorWizard = cdiRefactorWizard.next();
-			affectedFiles = cdiRefactorWizard.getAffectedFiles();
-			cdiRefactorWizard.finish();
+			RenameNamedBeanWizardDialog dialog = new RenameNamedBeanWizardDialog();
+			
+			RenameNamedBeanWizardFirstPage firstPage = dialog.getFirstPage();
+			firstPage.setNamedName(newNamed);
+			
+			dialog.next();
+			bot.sleep(Timing.time2S());
+			
+			RenameNamedBeanWizardSecondPage secondPage = dialog.getSecondPage();
+			affectedFiles = secondPage.getAffectedFiles();
+			
+			dialog.finish();
 		} catch (AnnotationException exc) {
 			LOGGER.info("There is no named annotation in tested class");
 			fail(exc.getMessage());
@@ -173,47 +183,6 @@ public class JSFTestBase extends CDITestBase {
 			bot.activeShell().bot().button("Close").click();
 		}
 		return affectedFiles;
-	}
-	
-	/**
-	 * Methods creates new JSF Project with selected name, environment and template. Finnaly
-	 * it adds CDI support to this project.
-	 * @param projectName
-	 * @param env
-	 * @param template
-	 */
-	private void createJSFProjectWithCDISupport(String projectName, JSFEnvironment env, 
-			JSFTemplate template) {
-		
-		createJSFProject(projectName, env, template);
-		projectHelper.addCDISupport(projectName);
-		
-	}
-
-	/**
-	 * Methods creates new JSF Project with selected name, environment and template.
-	 * @param projectName
-	 * @param env
-	 * @param template
-	 */
-	private void createJSFProject(String projectName, JSFEnvironment env, 
-			JSFTemplate template) {				
-		new NewJSFProjectWizard().run().
-			setName(getProjectName()).
-			setEnvironment(env).
-			setJSFTemplate(template).		
-			finish();		
-		/*
-		 * workaround for non Web Perspective, click No button
-		 * to not change perspective to Web Perspectives
-		 * 
-		 */
-		try {
-			bot.button("No").click();
-		} catch (WidgetNotFoundException exc) {
-			log.info("There is no dialog to change perspective.");
-		}
-		util.waitForNonIgnoredJobs();						
 	}
 				
 }

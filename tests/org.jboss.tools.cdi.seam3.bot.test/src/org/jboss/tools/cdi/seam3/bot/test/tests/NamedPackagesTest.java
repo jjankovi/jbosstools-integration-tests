@@ -15,7 +15,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.jboss.tools.cdi.bot.test.CDIConstants;
-import org.jboss.tools.cdi.bot.test.uiutils.CollectionsUtil;
+import org.jboss.tools.cdi.bot.test.util.CollectionsUtil;
+import org.jboss.tools.cdi.bot.test.util.ProjectUtil;
 import org.jboss.tools.cdi.seam3.bot.test.base.Seam3TestBase;
 import org.jboss.tools.cdi.seam3.bot.test.util.SeamLibrary;
 import org.junit.After;
@@ -63,7 +64,7 @@ public class NamedPackagesTest extends Seam3TestBase {
 		
 		importSeam3ProjectWithLibrary(projectName, SeamLibrary.SOLDER_3_1);
 		
-		editResourceUtil.renameFileInExplorerBase(packageExplorer, PACKAGE_INFO_JAVA_CDI, 
+		ProjectUtil.renameFileInExplorerBase(packageExplorer, PACKAGE_INFO_JAVA_CDI, 
 				projectName + "/" + CDIConstants.SRC + "/" + CDI_SEAM_PACKAGE, PACKAGE_INFO_JAVA);
 		eclipse.cleanAllProjects();
 		
@@ -84,9 +85,9 @@ public class NamedPackagesTest extends Seam3TestBase {
 		
 		importSeam3ProjectWithLibrary(projectName, SeamLibrary.SOLDER_3_1);
 		
-		editResourceUtil.renameFileInExplorerBase(packageExplorer, PACKAGE_INFO_JAVA_CDI, 
+		ProjectUtil.renameFileInExplorerBase(packageExplorer, PACKAGE_INFO_JAVA_CDI, 
 				projectName + "/" + CDIConstants.SRC + "/" + CDI_SEAM_PACKAGE, PACKAGE_INFO_JAVA);
-		editResourceUtil.renameFileInExplorerBase(packageExplorer, PACKAGE_INFO_JAVA_CDI, 
+		ProjectUtil.renameFileInExplorerBase(packageExplorer, PACKAGE_INFO_JAVA_CDI, 
 				projectName + "/" + CDIConstants.SRC + "/" + CDI_TEST_PACKAGE, PACKAGE_INFO_JAVA);
 		eclipse.cleanAllProjects();
 		

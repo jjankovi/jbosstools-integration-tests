@@ -57,17 +57,15 @@ public class ExactAnnotationTest extends SolderAnnotationTestBase {
 		packageExplorer.openFile(projectName, CDIConstants.SRC, 
 				getPackageName(), APPLICATION_CLASS).toTextEditor();
 		
-		testMultipleBeansValidationProblemExists(projectName);
+		testMultipleBeansValidationProblemExists();
 				
 		editResourceUtil.replaceInEditor(managerClass, peopleManager + ".class");
-		testProperInjectBean(projectName, peopleManager + ".class", 
-				peopleManager);
+		testProperInjectBean(peopleManager + ".class", peopleManager);
 
 		bot.editorByTitle(APPLICATION_CLASS).show();
 		
 		editResourceUtil.replaceInEditor(peopleManager + ".class", otherManager + ".class");
-		testProperInjectBean(projectName, otherManager + ".class", 
-				otherManager);
+		testProperInjectBean(otherManager + ".class", otherManager);
 		
 	}
 	

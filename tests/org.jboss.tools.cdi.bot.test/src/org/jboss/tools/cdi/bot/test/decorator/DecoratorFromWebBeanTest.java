@@ -10,15 +10,16 @@
  ******************************************************************************/
 package org.jboss.tools.cdi.bot.test.decorator;
 
+import java.util.Arrays;
+
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEditor;
 import org.jboss.tools.cdi.bot.test.CDIConstants;
 import org.jboss.tools.cdi.bot.test.CDITestBase;
-import org.jboss.tools.cdi.bot.test.annotations.CDIWizardType;
 import org.jboss.tools.cdi.bot.test.editor.BeansEditor;
-import org.jboss.tools.cdi.bot.test.uiutils.actions.NewCDIFileWizard;
-import org.jboss.tools.cdi.bot.test.uiutils.wizards.CDIWizardBase;
+import org.jboss.tools.cdi.reddeer.cdi.ui.NewDecoratorCreationWizardDialog;
+import org.jboss.tools.cdi.reddeer.cdi.ui.NewDecoratorCreationWizardPage;
 import org.junit.After;
 import org.junit.Test;
 
@@ -59,19 +60,21 @@ public class DecoratorFromWebBeanTest extends CDITestBase {
 		packageExplorer.show();
 		packageExplorer.selectTreeItem(ACCOUNT_JAVA, path);
 		
-		CDIWizardBase decoratorWizard = new NewCDIFileWizard(
-				CDIWizardType.DECORATOR).run();
+		NewDecoratorCreationWizardDialog decoratorDialog = 
+				new NewDecoratorCreationWizardDialog();
+		decoratorDialog.open();
+		NewDecoratorCreationWizardPage decoratorPage = 
+				decoratorDialog.getFirstPage();
 		
-		assertTrue(decoratorWizard.getName().equals(ACCOUNT_DECORATOR));
 		
-		assertTrue(decoratorWizard.getDecoratedInterfaces().size() == 1);
+		assertTrue(decoratorPage.getName().equals(ACCOUNT_DECORATOR));
 		
-		assertTrue(decoratorWizard.getDecoratedInterfaces().
+		assertTrue(decoratorPage.getDecoratedInterfaces().size() == 1);
+		
+		assertTrue(decoratorPage.getDecoratedInterfaces().
 				get(0).equals(getPackageName() + "." + ACCOUNT));
 		
-		assertTrue(decoratorWizard.canFinish());
-		
-		decoratorWizard.finishWithWait();
+		decoratorDialog.finish();
 		
 		packageExplorer.openFile(getProjectName(), 
 				CDIConstants.WEB_INF_BEANS_XML_PATH.split("/"));
@@ -101,12 +104,18 @@ public class DecoratorFromWebBeanTest extends CDITestBase {
 	@Test
 	public void testCreatingDecoratorWithWizard() {
 		
-		CDIWizardBase decoratorWizard = new NewCDIFileWizard(
-				CDIWizardType.DECORATOR).run();
-		decoratorWizard.setName(ACCOUNT_DECORATOR).
-			setPackage(getPackageName()).
-			addInterface(getPackageName() + "." + ACCOUNT).
-			finishWithWait();
+		NewDecoratorCreationWizardDialog decoratorDialog = 
+				new NewDecoratorCreationWizardDialog();
+		decoratorDialog.open();
+		NewDecoratorCreationWizardPage decoratorPage = 
+				decoratorDialog.getFirstPage();
+		
+		decoratorPage.setName(ACCOUNT_DECORATOR);
+		decoratorPage.setPackage(getPackageName());
+		decoratorPage.setDecoratedType(Arrays.asList(
+				getPackageName() + "." + ACCOUNT));
+		
+		decoratorDialog.finish();
 		
 		packageExplorer.openFile(getProjectName(), 
 				CDIConstants.WEB_INF_BEANS_XML_PATH.split("/"));

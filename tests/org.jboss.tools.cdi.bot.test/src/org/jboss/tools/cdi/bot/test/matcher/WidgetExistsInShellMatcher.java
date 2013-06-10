@@ -19,7 +19,7 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.hamcrest.Description;
 import org.junit.internal.matchers.TypeSafeMatcher;
 
-@SuppressWarnings("restriction")
+@SuppressWarnings({ "restriction", "deprecation" })
 public class WidgetExistsInShellMatcher extends TypeSafeMatcher<SWTBotShell> {
 
 	private Class<? extends Widget> widgetClass = null;

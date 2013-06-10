@@ -43,14 +43,14 @@ public class VetoAnnotationTest extends SolderAnnotationTestBase {
 		packageExplorer.openFile(projectName, CDIConstants.SRC, 
 				getPackageName(), APPLICATION_CLASS).toTextEditor();
 		
-		testNoBeanValidationProblemExists(projectName);
+		testNoBeanValidationProblemExists();
 		
 		packageExplorer.openFile(projectName, CDIConstants.SRC, 
 				getPackageName(), otherBean + ".java").toTextEditor();
 		editResourceUtil.replaceInEditor("public class " + otherBean,
 				"public class " + otherBean + " extends " + vetoBean);
 		
-		testProperInjectBean(projectName, "bean", otherBean);
+		testProperInjectBean("bean", otherBean);
 		
 	}
 	
@@ -66,14 +66,14 @@ public class VetoAnnotationTest extends SolderAnnotationTestBase {
 		packageExplorer.openFile(projectName, CDIConstants.SRC, 
 				getPackageName(), APPLICATION_CLASS).toTextEditor();
 		
-		testNoBeanValidationProblemExists(projectName);
+		testNoBeanValidationProblemExists();
 		
 		packageExplorer.openFile(projectName, CDIConstants.SRC, 
 				getPackageName(), otherBean + ".java").toTextEditor();
 		editResourceUtil.replaceInEditor("public class " + otherBean,
 				"public class " + otherBean + " extends " + vetoBean);
 		
-		testProperInjectBean(projectName, "bean", otherBean);
+		testProperInjectBean("bean", otherBean);
 		
 	}
 	
@@ -88,14 +88,14 @@ public class VetoAnnotationTest extends SolderAnnotationTestBase {
 		packageExplorer.openFile(projectName, CDIConstants.SRC, 
 				getPackageName(), APPLICATION_CLASS).toTextEditor();
 		
-		testNoBeanValidationProblemExists(projectName);
+		testNoBeanValidationProblemExists();
 		
 		packageExplorer.openFile(projectName, CDIConstants.SRC, 
 				getPackageName(), vetoBean + ".java").toTextEditor();
 		editResourceUtil.replaceInEditor("@Veto", "");
 		editResourceUtil.replaceInEditor("import org.jboss.solder.core.Veto;", "");
 		
-		testProperInjectProducer(projectName, "manager", vetoBean, "getManager");
+		testProperInjectProducer("manager", vetoBean, "getManager");
 		
 	}
 	
@@ -110,14 +110,14 @@ public class VetoAnnotationTest extends SolderAnnotationTestBase {
 		packageExplorer.openFile(projectName, CDIConstants.SRC, 
 				getPackageName(), APPLICATION_CLASS).toTextEditor();
 		
-		testNoBeanValidationProblemExists(projectName);
+		testNoBeanValidationProblemExists();
 		
 		packageExplorer.openFile(projectName, CDIConstants.SRC, 
 				getPackageName(), vetoBean + ".java").toTextEditor();
 		editResourceUtil.replaceInEditor("@Veto", "");
 		editResourceUtil.replaceInEditor("import org.jboss.solder.core.Veto;", "");
 		
-		testProperInjectProducer(projectName, "manager", vetoBean,  "manager");
+		testProperInjectProducer("manager", vetoBean,  "manager");
 		
 	}
 	

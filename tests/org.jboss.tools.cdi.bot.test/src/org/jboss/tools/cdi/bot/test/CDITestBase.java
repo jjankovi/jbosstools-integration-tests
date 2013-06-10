@@ -13,13 +13,8 @@ package org.jboss.tools.cdi.bot.test;
 
 import java.util.logging.Logger;
 
-import org.jboss.tools.cdi.bot.test.uiutils.AsYouTypeValidationHelper;
-import org.jboss.tools.cdi.bot.test.uiutils.BeansXMLHelper;
-import org.jboss.tools.cdi.bot.test.uiutils.CDIProjectHelper;
-import org.jboss.tools.cdi.bot.test.uiutils.CDIWizardHelper;
 import org.jboss.tools.cdi.bot.test.uiutils.EditorResourceHelper;
-import org.jboss.tools.cdi.bot.test.uiutils.QuickFixHelper;
-import org.jboss.tools.cdi.bot.test.uiutils.wizards.CDIWizardBaseExt;
+import org.jboss.tools.cdi.bot.test.util.ProjectUtil;
 import org.jboss.tools.ui.bot.ext.RequirementAwareSuite;
 import org.jboss.tools.ui.bot.ext.SWTTestExt;
 import org.jboss.tools.ui.bot.ext.config.Annotations.Require;
@@ -42,18 +37,11 @@ public class CDITestBase extends SWTTestExt {
 	private String packageName = "cdi";
 	
 	protected static final Logger LOGGER = Logger.getLogger(CDITestBase.class.getName());
-	protected static final CDIProjectHelper projectHelper = new CDIProjectHelper(); 
-	protected static final BeansXMLHelper beansHelper = new BeansXMLHelper();
-	protected static final CDIWizardHelper wizard = new CDIWizardHelper();
-	protected static final CDIWizardBaseExt wizardExt = new CDIWizardBaseExt();
 	protected static final EditorResourceHelper editResourceUtil = new EditorResourceHelper();
-	protected static final QuickFixHelper quickFixHelper = new QuickFixHelper();
-	protected static final AsYouTypeValidationHelper asYouTypeValidationHelper = 
-			new AsYouTypeValidationHelper();
 	
 	@Before
 	public void prepareWorkspace() {
-		if (!projectHelper.projectExists(getProjectName())) {
+		if (!ProjectUtil.projectExists(getProjectName())) {
 			importCDITestProject(getProjectName());
 		}
 	}

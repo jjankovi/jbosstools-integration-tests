@@ -19,6 +19,7 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotTableItem;
 import org.jboss.tools.cdi.bot.test.CDIConstants;
 import org.jboss.tools.cdi.bot.test.CDITestBase;
 import org.jboss.tools.cdi.bot.test.uiutils.wizards.OpenOnOptionsDialog;
+import org.jboss.tools.cdi.bot.test.util.OpenOnUtil;
 import org.junit.Test;
 
 public class QuickFixProposalsDescriptionTest extends CDITestBase {
@@ -36,7 +37,7 @@ public class QuickFixProposalsDescriptionTest extends CDITestBase {
 		SWTBotEditor editor = packageExplorer.openFile(getProjectName(), CDIConstants.SRC, 
 				getPackageName(), className);
 		
-		OpenOnOptionsDialog openOnDialog = quickFixHelper.openOnDialog(
+		OpenOnOptionsDialog openOnDialog = OpenOnUtil.openOnDialog(
 				"AddCodeBean", className);
 		assertNotNull(openOnDialog);
 		
@@ -70,7 +71,7 @@ public class QuickFixProposalsDescriptionTest extends CDITestBase {
 		SWTBotEditor editor = packageExplorer.openFile(getProjectName(), CDIConstants.SRC, 
 				getPackageName(), className);
 		
-		OpenOnOptionsDialog openOnDialog = quickFixHelper.openOnDialog(
+		OpenOnOptionsDialog openOnDialog = OpenOnUtil.openOnDialog(
 				"@Disposes String param1, @Observes String param2", className);
 		assertNotNull(openOnDialog);
 		
@@ -105,7 +106,7 @@ public class QuickFixProposalsDescriptionTest extends CDITestBase {
 		SWTBotEditor editor = packageExplorer.openFile(getProjectName(), CDIConstants.SRC, 
 				getPackageName(), className);
 		
-		OpenOnOptionsDialog openOnDialog = quickFixHelper.openOnDialog(
+		OpenOnOptionsDialog openOnDialog = OpenOnUtil.openOnDialog(
 				"@Named(\"name\")", className);
 		assertNotNull(openOnDialog);
 		

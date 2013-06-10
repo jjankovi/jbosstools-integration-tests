@@ -14,7 +14,12 @@ package org.jboss.tools.cdi.bot.test.openon;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEditor;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTable;
 import org.jboss.tools.cdi.bot.test.CDIConstants;
-import org.jboss.tools.cdi.bot.test.annotations.CDIWizardType;
+import org.jboss.tools.cdi.bot.test.creator.BeanCreator;
+import org.jboss.tools.cdi.bot.test.creator.QualifierCreator;
+import org.jboss.tools.cdi.bot.test.creator.config.BeanConfiguration;
+import org.jboss.tools.cdi.bot.test.creator.config.QualifierConfiguration;
+import org.jboss.tools.cdi.bot.test.creator.util.CDICreatorUtil;
+import org.jboss.tools.cdi.bot.test.util.BeansXMLUtil;
 import org.jboss.tools.ui.bot.ext.Timing;
 import org.jboss.tools.ui.bot.ext.helper.OpenOnHelper;
 import org.junit.Test;
@@ -48,7 +53,7 @@ public class OpenOnTest extends OpenOnBase {
 	@Test
 	public void testBeansXMLClassesOpenOn() {
 
-		beansHelper.createEmptyBeansXML(getProjectName());
+		BeansXMLUtil.createEmptyBeansXML(getProjectName());
 
 		checkBeanXMLDecoratorOpenOn(getPackageName(), "D1");
 
@@ -64,10 +69,12 @@ public class OpenOnTest extends OpenOnBase {
 
 		String className = "Bean1";
 
-		wizard.createCDIComponentWithContent(CDIWizardType.BEAN, className,
-				getPackageName(), null,
+		new BeanCreator(new BeanConfiguration()
+			.setPackageName(getPackageName())
+			.setName(className)).newBean();
+		CDICreatorUtil.fillContentOfEditor(className + ".java", 
 				"/resources/openon/BeanWithDisposerAndProducer.java.cdi");
-
+		
 		editResourceUtil.replaceInEditor("BeanComponent", className);
 
 		bot.sleep(Timing.time2S());
@@ -89,15 +96,21 @@ public class OpenOnTest extends OpenOnBase {
 
 	@Test
 	public void testObserverOpenOn() {
-		wizard.createCDIComponentWithContent(CDIWizardType.BEAN, "EventBean",
-				getPackageName(), null, "/resources/openon/EventBean.java.cdi");
+		
+		new BeanCreator(new BeanConfiguration()
+			.setPackageName(getPackageName())
+			.setName("EventBean")).newBean();
+		CDICreatorUtil.fillContentOfEditor("EventBean.java", 
+			"/resources/openon/EventBean.java.cdi");
+	
+		new BeanCreator(new BeanConfiguration()
+			.setPackageName(getPackageName())
+			.setName("ObserverBean")).newBean();
+		CDICreatorUtil.fillContentOfEditor("ObserverBean.java", 
+			"/resources/openon/ObserverBean.java.cdi");
 
-		wizard.createCDIComponentWithContent(CDIWizardType.BEAN,
-				"ObserverBean", getPackageName(), null,
-				"/resources/openon/ObserverBean.java.cdi");
-
-		bot.editorByTitle("EventBean.java").show();
 		editResourceUtil.replaceInEditor(" event", " event");
+		bot.sleep(Timing.time2S()); // wait for CDI validator
 
 		OpenOnHelper.selectOpenOnOption(bot, "ObserverBean.java",
 				"observerMethod", "Open CDI Event");
@@ -112,37 +125,47 @@ public class OpenOnTest extends OpenOnBase {
 	}
 
 	private void prepareInjectedPointsComponents() {
-		wizard.createCDIComponent(CDIWizardType.QUALIFIER, "Q1",
-				getPackageName(), null);
-
-		wizard.createCDIComponent(CDIWizardType.QUALIFIER, "Q2",
-				getPackageName(), null);
-
-		wizard.createCDIComponent(CDIWizardType.BEAN, "MyBean1",
-				getPackageName(), null);
-
-		wizard.createCDIComponentWithContent(CDIWizardType.BEAN, "MyBean2",
-				getPackageName(), null,
+		
+		QualifierConfiguration qualifierConfig = new QualifierConfiguration();
+		qualifierConfig.setPackageName(getPackageName());
+		
+		qualifierConfig.setName("Q1");
+		new QualifierCreator(qualifierConfig).newQualifier();
+		
+		qualifierConfig.setName("Q2");
+		new QualifierCreator(qualifierConfig).newQualifier();
+		
+		BeanConfiguration beanConfig = new BeanConfiguration();
+		beanConfig.setPackageName(getPackageName());
+		
+		beanConfig.setName("MyBean1");
+		new BeanCreator(beanConfig).newBean();
+		
+		beanConfig.setName("MyBean2");
+		new BeanCreator(beanConfig).newBean();
+		CDICreatorUtil.fillContentOfEditor("MyBean2.java", 
 				"/resources/openon/InjectedPoints/MyBean2.java.cdi");
 
-		wizard.createCDIComponentWithContent(CDIWizardType.BEAN, "MyBean3",
-				getPackageName(), null,
+		beanConfig.setName("MyBean3");
+		new BeanCreator(beanConfig).newBean();
+		CDICreatorUtil.fillContentOfEditor("MyBean3.java", 
 				"/resources/openon/InjectedPoints/MyBean3.java.cdi");
-
-		wizard.createCDIComponentWithContent(CDIWizardType.BEAN, "MyBean4",
-				getPackageName(), null,
+		
+		beanConfig.setName("MyBean4");
+		new BeanCreator(beanConfig).newBean();
+		CDICreatorUtil.fillContentOfEditor("MyBean4.java", 
 				"/resources/openon/InjectedPoints/MyBean4.java.cdi");
-
-		wizard.createCDIComponentWithContent(CDIWizardType.BEAN, "MyBean5",
-				getPackageName(), null,
+		
+		beanConfig.setName("MyBean5");
+		new BeanCreator(beanConfig).newBean();
+		CDICreatorUtil.fillContentOfEditor("MyBean5.java", 
 				"/resources/openon/InjectedPoints/MyBean5.java.cdi");
-
-		wizard.createCDIComponentWithContent(CDIWizardType.BEAN, "MainBean",
-				getPackageName(), null,
+		
+		beanConfig.setName("MainBean");
+		new BeanCreator(beanConfig).newBean();
+		CDICreatorUtil.fillContentOfEditor("MainBean.java", 
 				"/resources/openon/InjectedPoints/MainBean.java.cdi");
-
-		util.waitForNonIgnoredJobs();
-
+		
 	}
 
 	private void checkInjectedPoint(String injectedPoint, String option) {

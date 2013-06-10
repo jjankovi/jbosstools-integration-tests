@@ -11,23 +11,31 @@
 
 package org.jboss.tools.cdi.bot.test.quickfix.base;
 
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
+import java.util.Arrays;
+
 import org.jboss.tools.cdi.bot.test.CDITestBase;
-import org.jboss.tools.cdi.bot.test.annotations.CDIWizardType;
-import org.jboss.tools.cdi.bot.test.annotations.ValidationType;
-import org.jboss.tools.cdi.bot.test.quickfix.validators.BeansXmlValidationProvider;
-import org.jboss.tools.cdi.bot.test.quickfix.validators.IValidationProvider;
-import org.jboss.tools.cdi.bot.test.uiutils.wizards.CDIWizardBase;
-import org.jboss.tools.cdi.bot.test.uiutils.wizards.QuickFixDialogWizard;
+import org.jboss.tools.cdi.bot.test.annotations.ProblemsType;
+import org.jboss.tools.cdi.bot.test.util.QuickFixUtil;
+import org.jboss.tools.cdi.reddeer.cdi.ui.NewBeanWizardDialog;
+import org.jboss.tools.cdi.reddeer.cdi.ui.NewBeanWizardPage;
+import org.jboss.tools.cdi.reddeer.cdi.ui.NewDecoratorCreationWizardDialog;
+import org.jboss.tools.cdi.reddeer.cdi.ui.NewDecoratorCreationWizardPage;
+import org.jboss.tools.cdi.reddeer.cdi.ui.NewInterceptorWizardDialog;
+import org.jboss.tools.cdi.reddeer.cdi.ui.NewInterceptorWizardPage;
+import org.jboss.tools.cdi.reddeer.cdi.ui.NewStereotypeWizardDialog;
+import org.jboss.tools.cdi.reddeer.cdi.ui.NewStereotypeWizardPage;
 import org.jboss.tools.ui.bot.ext.view.ProblemsView;
 
 public class BeansXMLQuickFixTestBase extends CDITestBase {
 
-	private IValidationProvider validationProvider = new BeansXmlValidationProvider();
-	
-	public IValidationProvider getValidationProvider() {
-		return validationProvider;
-	}
+	private static final String VALIDATION_PROBLEM_1 = 
+			"There is no class";
+	private static final String VALIDATION_PROBLEM_2 = 
+			"There is no annotation";
+	private static final String VALIDATION_PROBLEM_3 = 
+			"is not an alternative bean class";
+	private static final String VALIDATION_PROBLEM_4 = 
+			"is not @Alternative stereotype annotation";
 	
 	/**
 	 * Method checks if there is no beans.xml validation error
@@ -48,13 +56,17 @@ public class BeansXMLQuickFixTestBase extends CDITestBase {
 	 */
 	public void resolveAddNewAlternative(String name, String pkg) {
 		
-		openBeanXMLValidationProblem(ValidationType.NO_CLASS, getProjectName());
-		CDIWizardBase cdiWizardBase = new CDIWizardBase(CDIWizardType.BEAN);
-		if (cdiWizardBase.isAlternative() && cdiWizardBase.canFinish()) {
-			cdiWizardBase.setName(name).setPackage(pkg).finishWithWait();
-		}else {
-			fail("Dialog can't be finishWithWaited");
-		}
+		QuickFixUtil.performOpenQuickFix(ProblemsType.ERRORS, 
+				VALIDATION_PROBLEM_1);
+		QuickFixUtil.useQuickFix("Create");
+		
+		NewBeanWizardDialog dialog = new NewBeanWizardDialog();
+		
+		NewBeanWizardPage page = dialog.getFirstPage();
+		page.setName(name);
+		page.setPackage(pkg);
+		
+		dialog.finish();
 		
 	}
 	
@@ -68,13 +80,17 @@ public class BeansXMLQuickFixTestBase extends CDITestBase {
 	 */
 	public void resolveAddNewStereotype(String name, String pkg) {
 		
-		openBeanXMLValidationProblem(ValidationType.NO_ANNOTATION, getProjectName());
-		CDIWizardBase cdiWizardBase = new CDIWizardBase(CDIWizardType.STEREOTYPE);
-		if (cdiWizardBase.isAlternative() && cdiWizardBase.canFinish()) {
-			cdiWizardBase.setName(name).setPackage(pkg).finishWithWait();
-		}else {
-			fail("Dialog can't be finishWithWaited");
-		}
+		QuickFixUtil.performOpenQuickFix(ProblemsType.ERRORS, 
+				VALIDATION_PROBLEM_2);
+		QuickFixUtil.useQuickFix("Create");
+		
+		NewStereotypeWizardDialog dialog = new NewStereotypeWizardDialog();
+		
+		NewStereotypeWizardPage page = dialog.getFirstPage();
+		page.setName(name);
+		page.setPackage(pkg);
+		
+		dialog.finish();
 		
 	}
 	
@@ -88,14 +104,18 @@ public class BeansXMLQuickFixTestBase extends CDITestBase {
 	 */
 	public void resolveAddNewDecorator(String name, String pkg) {
 		
-		openBeanXMLValidationProblem(ValidationType.NO_CLASS, getProjectName());
-		CDIWizardBase cdiWizardBase = new CDIWizardBase(CDIWizardType.DECORATOR);		
-		cdiWizardBase.addInterface("java.util.List");
-		if (cdiWizardBase.canFinish()) {
-			cdiWizardBase.setName(name).setPackage(pkg).finishWithWait();
-		} else {
-			fail("Dialog can't be finishWithWaited");
-		}
+		QuickFixUtil.performOpenQuickFix(ProblemsType.ERRORS, 
+				VALIDATION_PROBLEM_1);
+		QuickFixUtil.useQuickFix("Create");
+		
+		NewDecoratorCreationWizardDialog dialog = new NewDecoratorCreationWizardDialog();
+		
+		NewDecoratorCreationWizardPage page = dialog.getFirstPage();
+		page.setName(name);
+		page.setPackage(pkg);
+		page.setDecoratedType(Arrays.asList("java.util.List"));
+		
+		dialog.finish();
 		
 	}
 	
@@ -109,13 +129,17 @@ public class BeansXMLQuickFixTestBase extends CDITestBase {
 	 */
 	public void resolveAddNewInterceptor(String name, String pkg) {
 		
-		openBeanXMLValidationProblem(ValidationType.NO_CLASS, getProjectName());
-		CDIWizardBase cdiWizardBase = new CDIWizardBase(CDIWizardType.INTERCEPTOR);
-		if (cdiWizardBase.canFinish()) {
-			cdiWizardBase.setName(name).setPackage(pkg).finishWithWait();
-		}else {
-			fail("Dialog can't be finishWithWaited");
-		}
+		QuickFixUtil.performOpenQuickFix(ProblemsType.ERRORS, 
+				VALIDATION_PROBLEM_1);
+		QuickFixUtil.useQuickFix("Create");
+		
+		NewInterceptorWizardDialog dialog = new NewInterceptorWizardDialog();
+		
+		NewInterceptorWizardPage page = dialog.getFirstPage();
+		page.setName(name);
+		page.setPackage(pkg);
+		
+		dialog.finish();
 		
 	}
 	
@@ -127,7 +151,10 @@ public class BeansXMLQuickFixTestBase extends CDITestBase {
 	 */
 	public void resolveAddAlternativeToBean(String name) {
 		
-		openBeanXMLValidationProblem(ValidationType.NO_ALTERNATIVE, getProjectName());
+		QuickFixUtil.performOpenQuickFix(ProblemsType.ERRORS, 
+				VALIDATION_PROBLEM_3);
+		QuickFixUtil.useQuickFix("Add");
+		
 		String content = bot.editorByTitle(name + ".java").toTextEditor().getText();
 		assertTrue(content.contains("@Alternative"));
 		
@@ -141,28 +168,13 @@ public class BeansXMLQuickFixTestBase extends CDITestBase {
 	 */
 	public void resolveAddAlternativeToStereotype(String name) {
 		
-		openBeanXMLValidationProblem(ValidationType.NO_ALTERNATIVE_STEREOTYPE, getProjectName());
+		QuickFixUtil.performOpenQuickFix(ProblemsType.ERRORS, 
+				VALIDATION_PROBLEM_4);
+		QuickFixUtil.useQuickFix("Add");
+		
 		String content = bot.editorByTitle(name + ".java").toTextEditor().getText();
 		assertTrue(content.contains("@Alternative"));
 		
-	}
-	
-	/**
-	 * Method firstly gets beans.xml validation problem. Then
-	 * it opens quick fix wizard, selects default value and
-	 * press finishWithWait button
-	 */
-	private void openBeanXMLValidationProblem(ValidationType validationProblemType, String projectName) {
-		
-		SWTBotTreeItem validationProblem = quickFixHelper.getProblem(validationProblemType, 
-				projectName, validationProvider);		
-		assertNotNull(validationProblem);
-		
-		quickFixHelper.openQuickFix(validationProblem);	
-		QuickFixDialogWizard qfWizard = new QuickFixDialogWizard();
-		qfWizard.setFix(qfWizard.getDefaultCDIQuickFix());
-		qfWizard.setResource(qfWizard.getResources().get(0));
-		qfWizard.finishWithWait();
 	}
 	
 }

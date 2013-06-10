@@ -11,10 +11,13 @@
 
 package org.jboss.tools.cdi.bot.test.validation;
 
+import org.jboss.reddeer.swt.wait.WaitUntil;
+import org.jboss.reddeer.swt.wait.WaitWhile;
 import org.jboss.tools.cdi.bot.test.CDITestBase;
-import org.jboss.tools.cdi.bot.test.annotations.CDIWizardType;
 import org.jboss.tools.cdi.bot.test.condition.AsYouTypeMarkerExistsCondition;
-import org.jboss.tools.ui.bot.ext.Timing;
+import org.jboss.tools.cdi.bot.test.creator.BeanCreator;
+import org.jboss.tools.cdi.bot.test.creator.config.BeanConfiguration;
+import org.jboss.tools.cdi.bot.test.util.BeansXMLUtil;
 import org.junit.After;
 import org.junit.Test;
 
@@ -39,8 +42,9 @@ public class AsYouTypeValidationTest extends CDITestBase {
 	@Test
 	public void testJavaAYTValidation() {
 		
-		wizard.createCDIComponent(
-				CDIWizardType.BEAN, "Test", getPackageName(), null);
+		new BeanCreator(new BeanConfiguration()
+			.setPackageName(getPackageName())
+			.setName("Test")).newBean();
 		
 		//=======================================================================
 		// 	Invoke as-you-type validation marker appearance without saving file
@@ -48,40 +52,42 @@ public class AsYouTypeValidationTest extends CDITestBase {
 		
 		editResourceUtil.replaceInEditor("// TODO Auto-generated constructor stub", "");
 		
-		bot.waitWhile(new AsYouTypeMarkerExistsCondition("TODO Auto-generated constructor stub"));
+		new WaitWhile(new AsYouTypeMarkerExistsCondition("TODO Auto-generated constructor stub"));
 		
 		editResourceUtil.replaceClassContentByResource(AsYouTypeValidationTest.class.
 				getResourceAsStream("/resources/validation/Test1.java.cdi"), 
 				false, false, getPackageName(), "Test");
 		
-		bot.waitUntil(new AsYouTypeMarkerExistsCondition(ELIGIBLE_VALIDATION_PROBLEM));
+		new WaitUntil(new AsYouTypeMarkerExistsCondition(ELIGIBLE_VALIDATION_PROBLEM));
 		
 		//==========================================================================
 		// 	Invoke as-you-type validation marker disappearance without saving file
 		//==========================================================================
 		
 		editResourceUtil.replaceInEditor("@Inject ", "@Inject @Named ", false);
-		bot.waitWhile(new AsYouTypeMarkerExistsCondition(ELIGIBLE_VALIDATION_PROBLEM));
+		new WaitWhile(new AsYouTypeMarkerExistsCondition(ELIGIBLE_VALIDATION_PROBLEM));
 	}
 	
 	@Test
 	public void testBeansXmlAYTValidation() {
 		
-		wizard.createCDIComponent(
-				CDIWizardType.BEAN, "A1", getPackageName(), null);
+		new BeanCreator(new BeanConfiguration()
+			.setPackageName(getPackageName())
+			.setName("A1")).newBean();
 		
-		wizard.createCDIComponent(
-				CDIWizardType.BEAN, "A2", getPackageName(), "alternative");
+		new BeanCreator(new BeanConfiguration()
+			.setPackageName(getPackageName())
+			.setName("A2")
+			.setAlternative(true)).newBean();
 		
 		//=======================================================================
 		// 	Invoke as-you-type validation marker appearance without saving file
 		//=======================================================================
 		
-		beansHelper.createBeansXMLWithAlternative(getProjectName(), 
+		BeansXMLUtil.createBeansXMLWithAlternative(getProjectName(), 
 				getPackageName(), "A1", false);
 		
-		bot.waitUntil(new AsYouTypeMarkerExistsCondition(BEAN_IS_NOT_ALTERNATIVE), 
-				Timing.time10S());
+		new WaitUntil(new AsYouTypeMarkerExistsCondition(BEAN_IS_NOT_ALTERNATIVE));
 		
 		//==========================================================================
 		// 	Invoke as-you-type validation marker disappearance without saving file
@@ -89,7 +95,7 @@ public class AsYouTypeValidationTest extends CDITestBase {
 		
 		editResourceUtil.replaceInEditor("A1", "A2", false);
 		
-		bot.waitWhile(new AsYouTypeMarkerExistsCondition(BEAN_IS_NOT_ALTERNATIVE));
+		new WaitWhile(new AsYouTypeMarkerExistsCondition(BEAN_IS_NOT_ALTERNATIVE));
 	}
 	
 }

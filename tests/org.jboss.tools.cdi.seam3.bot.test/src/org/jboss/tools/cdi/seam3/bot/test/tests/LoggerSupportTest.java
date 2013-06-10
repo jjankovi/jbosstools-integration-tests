@@ -10,9 +10,8 @@
  ******************************************************************************/
 package org.jboss.tools.cdi.seam3.bot.test.tests;
 
-import org.jboss.tools.cdi.bot.test.annotations.ValidationType;
-import org.jboss.tools.cdi.bot.test.quickfix.validators.BeanValidationProvider;
-import org.jboss.tools.cdi.bot.test.quickfix.validators.IValidationProvider;
+import org.jboss.tools.cdi.bot.test.annotations.ProblemsType;
+import org.jboss.tools.cdi.bot.test.util.QuickFixUtil;
 import org.jboss.tools.cdi.seam3.bot.test.base.Seam3TestBase;
 import org.jboss.tools.cdi.seam3.bot.test.util.SeamLibrary;
 import org.junit.BeforeClass;
@@ -26,8 +25,8 @@ import org.junit.Test;
 public class LoggerSupportTest extends Seam3TestBase {
 
 	private static String projectName = "logger1";
-	private IValidationProvider validationProvider = new BeanValidationProvider();
-	
+	private static final String VALIDATION_PROBLEM_1 = "No bean is eligible "
+			+ "for injection to the injection point";
 	@BeforeClass
 	public static void setup() {
 		importSeam3ProjectWithLibrary(projectName, SeamLibrary.SOLDER_3_1);
@@ -42,9 +41,7 @@ public class LoggerSupportTest extends Seam3TestBase {
 	}
 	
 	private void assertLoggerIsInjectable() {
-		assertNull("There is not bean eligible for injection to injection point Logger", 
-				quickFixHelper.getProblem(
-						ValidationType.NO_BEAN_ELIGIBLE, projectName, validationProvider));
+		QuickFixUtil.waitForProblem(ProblemsType.WARNINGS, VALIDATION_PROBLEM_1);
 	}
 	
 }

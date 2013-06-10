@@ -11,13 +11,30 @@
 
 package org.jboss.tools.cdi.bot.test.beansxml;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
 import org.jboss.tools.cdi.bot.test.CDIConstants;
 import org.jboss.tools.cdi.bot.test.CDITestBase;
-import org.jboss.tools.cdi.bot.test.annotations.CDIWizardType;
+import org.jboss.tools.cdi.bot.test.creator.AnnotationLiteralCreator;
+import org.jboss.tools.cdi.bot.test.creator.BeanCreator;
+import org.jboss.tools.cdi.bot.test.creator.DecoratorCreator;
+import org.jboss.tools.cdi.bot.test.creator.InterceptorBindingCreator;
+import org.jboss.tools.cdi.bot.test.creator.InterceptorCreator;
+import org.jboss.tools.cdi.bot.test.creator.QualifierCreator;
+import org.jboss.tools.cdi.bot.test.creator.ScopeCreator;
+import org.jboss.tools.cdi.bot.test.creator.StereotypeCreator;
+import org.jboss.tools.cdi.bot.test.creator.config.AnnotationLiteralConfiguration;
+import org.jboss.tools.cdi.bot.test.creator.config.BeanConfiguration;
+import org.jboss.tools.cdi.bot.test.creator.config.DecoratorConfiguration;
+import org.jboss.tools.cdi.bot.test.creator.config.InterceptorBindingConfiguration;
+import org.jboss.tools.cdi.bot.test.creator.config.InterceptorConfiguration;
+import org.jboss.tools.cdi.bot.test.creator.config.QualifierConfiguration;
+import org.jboss.tools.cdi.bot.test.creator.config.ScopeConfiguration;
+import org.jboss.tools.cdi.bot.test.creator.config.StereotypeConfiguration;
+import org.jboss.tools.cdi.bot.test.util.BeansXMLUtil;
 import org.jboss.tools.ui.bot.ext.helper.ContentAssistHelper;
 import org.jboss.tools.ui.bot.ext.types.IDELabel;
 import org.junit.Test;
@@ -31,22 +48,13 @@ import org.junit.Test;
 
 public class BeansXMLCompletionTest extends CDITestBase {
 	
-	private static final List<String> INTERCEPTOR_NAMES = Arrays.asList(
-			"I1", "I2", "I3");
-	private static final List<String> DECORATORS_NAMES = Arrays.asList(
-			"D1", "D2", "D3");
-	private static final List<String> ALTERNATIVES_NAMES = Arrays.asList(
-			"A1", "A2", "A3");
-	private static final List<String> STEREOTYPES_NAMES = Arrays.asList(
-			"S1", "S2", "S3");
-	
 	private static final List<String> BEANS_XML_TAGS = Arrays.asList(
 			"alternatives", "decorators", "interceptors");
 
 	@Test
 	public void testPossibleCompletionInBeansXML() {
 		
-		beansHelper.createBeansXMLWithEmptyTag(getProjectName());
+		BeansXMLUtil.createBeansXMLWithEmptyTag(getProjectName());
 		LOGGER.info("Clear beans.xml was created");
 				
 		checkAutoCompletion(3, 0, "<>", IDELabel.WebProjectsTree.BEANS_XML, BEANS_XML_TAGS);				
@@ -55,10 +63,19 @@ public class BeansXMLCompletionTest extends CDITestBase {
 	@Test
 	public void testInterceptorsCompletion() {
 
-		wizard.createCDIComponents(CDIWizardType.INTERCEPTOR, getPackageName(), 
-				INTERCEPTOR_NAMES, null, false);
-				
-		beansHelper.createBeansXMLWithInterceptor(getProjectName(), getPackageName(), null);
+		List<String> INTERCEPTOR_NAMES = Arrays.asList("I1", "I2", "I3");
+		
+		InterceptorConfiguration interceptorConfig = new InterceptorConfiguration();
+		interceptorConfig.setPackageName(getPackageName());
+		
+		interceptorConfig.setName(INTERCEPTOR_NAMES.get(0));
+		new InterceptorCreator(interceptorConfig).newInterceptor();
+		interceptorConfig.setName(INTERCEPTOR_NAMES.get(1));
+		new InterceptorCreator(interceptorConfig).newInterceptor();
+		interceptorConfig.setName(INTERCEPTOR_NAMES.get(2));
+		new InterceptorCreator(interceptorConfig).newInterceptor();
+		
+		BeansXMLUtil.createBeansXMLWithInterceptor(getProjectName(), getPackageName(), null);
 		LOGGER.info("Beans.xml with interceptors tag was created");
 				
 		List<String> proposalList = editResourceUtil.getProposalList(
@@ -71,10 +88,23 @@ public class BeansXMLCompletionTest extends CDITestBase {
 	@Test
 	public void testDecoratorsCompletion() {
 		
-		wizard.createCDIComponents(CDIWizardType.DECORATOR, getPackageName(), 
-				DECORATORS_NAMES, "java.util.Set", false);
-				
-		beansHelper.createBeansXMLWithDecorator(getProjectName(), getPackageName(), null);
+		List<String> DECORATORS_NAMES = Arrays.asList("D1", "D2", "D3");
+		List<String> interfaces = new ArrayList<String>();
+		interfaces.add("java.util.Set");
+		
+		DecoratorConfiguration decoratorConfiguration = new DecoratorConfiguration();
+		decoratorConfiguration
+			.setPackageName(getPackageName())
+			.setDecoratedInterfaces(interfaces);
+		
+		decoratorConfiguration.setName(DECORATORS_NAMES.get(0));
+		new DecoratorCreator(decoratorConfiguration).newDecorator();
+		decoratorConfiguration.setName(DECORATORS_NAMES.get(1));
+		new DecoratorCreator(decoratorConfiguration).newDecorator();
+		decoratorConfiguration.setName(DECORATORS_NAMES.get(2));
+		new DecoratorCreator(decoratorConfiguration).newDecorator();
+		
+		BeansXMLUtil.createBeansXMLWithDecorator(getProjectName(), getPackageName(), null);
 		LOGGER.info("Beans.xml with decorators tag was created");
 			
 		List<String> proposalList = editResourceUtil.getProposalList(IDELabel.WebProjectsTree.BEANS_XML, 
@@ -88,10 +118,21 @@ public class BeansXMLCompletionTest extends CDITestBase {
 	@Test
 	public void testStereotypesCompletion() {
 		
-		wizard.createCDIComponents(CDIWizardType.STEREOTYPE, getPackageName(), 
-				STEREOTYPES_NAMES, "alternative", false);
+		List<String> STEREOTYPES_NAMES = Arrays.asList("S1", "S2", "S3");
+		
+		StereotypeConfiguration stereotypeConfigutation = new StereotypeConfiguration();
+		stereotypeConfigutation
+			.setPackageName(getPackageName())
+			.setAlternative(true);
+		
+		stereotypeConfigutation.setName(STEREOTYPES_NAMES.get(0));
+		new StereotypeCreator(stereotypeConfigutation).newStereotype();
+		stereotypeConfigutation.setName(STEREOTYPES_NAMES.get(1));
+		new StereotypeCreator(stereotypeConfigutation).newStereotype();
+		stereotypeConfigutation.setName(STEREOTYPES_NAMES.get(2));
+		new StereotypeCreator(stereotypeConfigutation).newStereotype();
 				
-		beansHelper.createBeansXMLWithStereotype(getProjectName(), getPackageName(), null);
+		BeansXMLUtil.createBeansXMLWithStereotype(getProjectName(), getPackageName(), null);
 		LOGGER.info("Beans.xml with stereotype tag was created");
 			
 		List<String> proposalList = editResourceUtil.getProposalList(IDELabel.WebProjectsTree.BEANS_XML, 
@@ -105,10 +146,21 @@ public class BeansXMLCompletionTest extends CDITestBase {
 	@Test
 	public void testAlternativesCompletion() {
 		
-		wizard.createCDIComponents(CDIWizardType.BEAN, getPackageName(), 
-				ALTERNATIVES_NAMES, "alternative", false);
-				
-		beansHelper.createBeansXMLWithAlternative(getProjectName(), getPackageName(), null);
+		List<String> ALTERNATIVES_NAMES = Arrays.asList("A1", "A2", "A3");
+		
+		BeanConfiguration beanConfiguration = new BeanConfiguration();
+		beanConfiguration
+			.setPackageName(getPackageName())
+			.setAlternative(true);
+		
+		beanConfiguration.setName(ALTERNATIVES_NAMES.get(0));
+		new BeanCreator(beanConfiguration).newBean();
+		beanConfiguration.setName(ALTERNATIVES_NAMES.get(1));
+		new BeanCreator(beanConfiguration).newBean();
+		beanConfiguration.setName(ALTERNATIVES_NAMES.get(2));
+		new BeanCreator(beanConfiguration).newBean();
+		
+		BeansXMLUtil.createBeansXMLWithAlternative(getProjectName(), getPackageName(), null);
 		LOGGER.info("Beans.xml with alternative tag was created");
 		
 		List<String> proposalList = editResourceUtil.getProposalList(IDELabel.WebProjectsTree.BEANS_XML, 
@@ -124,18 +176,25 @@ public class BeansXMLCompletionTest extends CDITestBase {
 		
 		String[] components = {"AL1", "Q1", "B1", "IB1", "Sc1"};
 		
-		wizard.createCDIComponent(CDIWizardType.ANNOTATION_LITERAL, components[0], 
-				getPackageName(), null);
-		wizard.createCDIComponent(CDIWizardType.QUALIFIER, components[1], 
-				getPackageName(), null);
-		wizard.createCDIComponent(CDIWizardType.BEAN, components[2], 
-				getPackageName(), null);
-		wizard.createCDIComponent(CDIWizardType.INTERCEPTOR_BINDING, components[3], 
-				getPackageName(), null);
-		wizard.createCDIComponent(CDIWizardType.SCOPE, components[4], 
-				getPackageName(), null);
+		new AnnotationLiteralCreator(new AnnotationLiteralConfiguration()
+			.setPackageName(getPackageName())
+			.setName(components[0])
+			.setQualifier("javax.enterprise.inject.Any")).newAnnotationLiteral();
+		new QualifierCreator(new QualifierConfiguration()
+			.setPackageName(getPackageName())
+			.setName(components[1])).newQualifier();
+		new BeanCreator(new BeanConfiguration()
+			.setPackageName(getPackageName())
+			.setName(components[2])).newBean();
+		new InterceptorBindingCreator(
+			new InterceptorBindingConfiguration()
+				.setPackageName(getPackageName())
+				.setName(components[3])).newInterceptorBinding();
+		new ScopeCreator(new ScopeConfiguration()
+			.setPackageName(getPackageName())
+			.setName(components[4])).newScope();
 		
-		beansHelper.createBeansXMLWithEmptyTag(getProjectName());
+		BeansXMLUtil.createBeansXMLWithEmptyTag(getProjectName());
 		LOGGER.info("Clear beans.xml with empty tag was created");
 		
 		List<String> proposalList = editResourceUtil.getProposalList(

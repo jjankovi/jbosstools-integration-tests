@@ -16,12 +16,14 @@ import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEditor;
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.hamcrest.core.Is;
 import org.jboss.reddeer.eclipse.jdt.ui.packageexplorer.PackageExplorer;
+import org.jboss.reddeer.eclipse.jdt.ui.packageexplorer.Project;
 import org.jboss.reddeer.swt.api.Table;
 import org.jboss.reddeer.swt.exception.SWTLayerException;
-import org.jboss.reddeer.swt.impl.tree.ViewTreeItem;
+import org.jboss.reddeer.swt.impl.tree.DefaultTreeItem;
 import org.jboss.reddeer.swt.wait.WaitUntil;
 import org.jboss.tools.cdi.bot.test.CDITestBase;
 import org.jboss.tools.cdi.bot.test.condition.OpenedEditorHasTitleCondition;
+import org.jboss.tools.cdi.bot.test.util.ProjectUtil;
 import org.jboss.tools.cdi.reddeer.common.model.ui.AddIfClassAvailableDialog;
 import org.jboss.tools.cdi.reddeer.common.model.ui.AddIfSystemPropertyDialog;
 import org.jboss.tools.cdi.reddeer.common.model.ui.AddIncludeExcludeDialog;
@@ -49,8 +51,8 @@ public class WeldExtensionTest extends CDITestBase {
 	
 	@Before
 	public void prepareWorkspace() {
-		if (!projectHelper.projectExists(getProjectName())) {
-			projectHelper.createCDIProjectWithCDIWizard(getProjectName());
+		if (!ProjectUtil.projectExists(getProjectName())) {
+			ProjectUtil.newCDIProjectWithCDIWizard(getProjectName());
 		}
 		if (beansXmlNotOpened()) {
 			openBeansXml();
@@ -185,7 +187,7 @@ public class WeldExtensionTest extends CDITestBase {
 	private void assertScanCreated() {
 		String errorMessage = "Scan item was not found in Beans editor: ";
 		try {
-			new ViewTreeItem("beans.xml", "Scan");
+			new DefaultTreeItem("beans.xml", "Scan");
 		} catch (SWTLayerException exc) {
 			fail(errorMessage + exc.getMessage());
 		} catch (WidgetNotFoundException exc) {
@@ -209,15 +211,14 @@ public class WeldExtensionTest extends CDITestBase {
 	private void openBeansXml() {
 		PackageExplorer packageExplorer = new PackageExplorer();
 		packageExplorer.open();
-		packageExplorer
-			.selectProject(getProjectName())
-			.getProjectItem(IDELabel.WebProjectsTree.WEB_CONTENT,
-							IDELabel.WebProjectsTree.WEB_INF,
-							IDELabel.WebProjectsTree.BEANS_XML)
-			.open();
-		new WaitUntil(
-				new OpenedEditorHasTitleCondition(
-					IDELabel.WebProjectsTree.BEANS_XML));
+		Project project = packageExplorer.getProject(getProjectName());
+		project.select();
+		project.getProjectItem(
+				IDELabel.WebProjectsTree.WEB_CONTENT,
+				IDELabel.WebProjectsTree.WEB_INF,
+				IDELabel.WebProjectsTree.BEANS_XML).open();
+		new WaitUntil(new OpenedEditorHasTitleCondition(
+				IDELabel.WebProjectsTree.BEANS_XML));
 		
 		beansEditor = new BeansEditor(bot.activeEditor().getReference(), bot);
 	}

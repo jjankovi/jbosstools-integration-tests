@@ -11,9 +11,12 @@
 
 package org.jboss.tools.cdi.seam3.bot.test.tests;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.jboss.tools.cdi.bot.test.CDIConstants;
+import org.jboss.tools.cdi.bot.test.creator.BeanCreator;
+import org.jboss.tools.cdi.bot.test.creator.config.BeanConfiguration;
 import org.jboss.tools.cdi.seam3.bot.test.base.SolderAnnotationTestBase;
 import org.jboss.tools.cdi.seam3.bot.test.uiutils.AssignableBeansDialogExt;
 import org.jboss.tools.cdi.seam3.bot.test.util.SeamLibrary;
@@ -53,10 +56,13 @@ public class DefaultBeansTest extends SolderAnnotationTestBase {
 	public void testProperAssignAlternativesDeactive() {
 
 		importSeam3ProjectWithLibrary(projectName, SeamLibrary.SOLDER_3_1);
-
-		wizardExt.bean(getPackageName(), "ManagerImpl", true, false, false,
-				false, true, false, null, "Manager", null, null).finish();
-
+		new BeanCreator(new BeanConfiguration()
+			.setPackageName(getPackageName())
+			.setName("ManagerImpl")
+			.setPublic(true)
+			.setAlternative(true)
+			.setInterfaces(Arrays.asList("Manager"))).newBean();
+		
 		packageExplorer.openFile(projectName, CDIConstants.SRC,
 				getPackageName(), APPLICATION_CLASS);
 
@@ -87,9 +93,12 @@ public class DefaultBeansTest extends SolderAnnotationTestBase {
 
 		importSeam3ProjectWithLibrary(projectName, SeamLibrary.SOLDER_3_1);
 
-		wizardExt.bean(getPackageName(), "ManagerImpl", true, false, false,
-				false, false, false, null, "Manager", null, null).finish();
-
+		new BeanCreator(new BeanConfiguration()
+			.setPackageName(getPackageName())
+			.setName("ManagerImpl")
+			.setPublic(true)
+			.setInterfaces(Arrays.asList("Manager"))).newBean();
+		
 		packageExplorer.openFile(projectName, CDIConstants.SRC,
 				getPackageName(), APPLICATION_CLASS);
 
@@ -120,11 +129,15 @@ public class DefaultBeansTest extends SolderAnnotationTestBase {
 
 		importSeam3ProjectWithLibrary(projectName, SeamLibrary.SOLDER_3_1);
 
-		wizardExt.bean(getPackageName(), "ManagerImpl", true, false, false,
-				false, true, true, null, "Manager", null, null).finish();
-
+		new BeanCreator(new BeanConfiguration()
+			.setPackageName(getPackageName())
+			.setName("ManagerImpl")
+			.setPublic(true)
+			.setAlternative(true)
+			.setInterfaces(Arrays.asList("Manager"))).newBean();
+	
 		packageExplorer.openFile(projectName, CDIConstants.SRC,
-				getPackageName(), APPLICATION_CLASS);
+			getPackageName(), APPLICATION_CLASS);
 
 		OpenOnHelper.selectOpenOnOption(bot, APPLICATION_CLASS, "managerImpl",
 				CDIConstants.SHOW_ALL_ASSIGNABLE);

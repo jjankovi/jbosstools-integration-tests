@@ -11,8 +11,16 @@
 
 package org.jboss.tools.cdi.bot.test.openon;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.tools.cdi.bot.test.CDITestBase;
-import org.jboss.tools.cdi.bot.test.annotations.CDIWizardType;
+import org.jboss.tools.cdi.bot.test.creator.BeanCreator;
+import org.jboss.tools.cdi.bot.test.creator.DecoratorCreator;
+import org.jboss.tools.cdi.bot.test.creator.InterceptorCreator;
+import org.jboss.tools.cdi.bot.test.creator.config.BeanConfiguration;
+import org.jboss.tools.cdi.bot.test.creator.config.DecoratorConfiguration;
+import org.jboss.tools.cdi.bot.test.creator.config.InterceptorConfiguration;
 import org.jboss.tools.ui.bot.ext.helper.OpenOnHelper;
 import org.jboss.tools.ui.bot.ext.types.IDELabel;
 
@@ -49,8 +57,13 @@ public class OpenOnBase extends CDITestBase {
 	 * @return
 	 */
 	protected void checkBeanXMLDecoratorOpenOn(String packageName, String className) {
-		wizard.createCDIComponent(CDIWizardType.DECORATOR, className, packageName,
-				"java.util.Set");
+		List<String> interfaces = new ArrayList<String>();
+		interfaces.add("java.util.Set");
+		new DecoratorCreator(new DecoratorConfiguration()
+			.setPackageName(packageName)
+			.setName(className)
+			.setDecoratedInterfaces(interfaces)
+			.setRegisterInBeansXML(true)).newDecorator();
 		checkOpenOnBeanXml(packageName, className);
 	}
 	
@@ -64,8 +77,10 @@ public class OpenOnBase extends CDITestBase {
 	 * @return
 	 */
 	protected void checkBeanXMLInterceptorOpenOn(String packageName, String className) {
-		wizard.createCDIComponent(CDIWizardType.INTERCEPTOR, className, packageName,
-				null);
+		new InterceptorCreator(new InterceptorConfiguration()
+			.setPackageName(packageName)
+			.setName(className)
+			.setRegisterInBeansXML(true)).newInterceptor();
 		checkOpenOnBeanXml(packageName, className);
 	}
 	
@@ -78,8 +93,11 @@ public class OpenOnBase extends CDITestBase {
 	 * @return
 	 */
 	protected void checkBeanXMLAlternativeOpenOn(String packageName, String className) {
-		wizard.createCDIComponent(CDIWizardType.BEAN, className, packageName,
-				"alternative+beansxml");
+		new BeanCreator(new BeanConfiguration()
+			.setPackageName(packageName)
+			.setName(className)
+			.setAlternative(true)
+			.setRegisterInBeansXML(true)).newBean();
 		checkOpenOnBeanXml(packageName, className);
 	}
 	

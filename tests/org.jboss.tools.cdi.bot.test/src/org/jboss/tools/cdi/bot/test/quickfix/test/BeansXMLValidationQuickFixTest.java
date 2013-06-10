@@ -11,10 +11,16 @@
 
 package org.jboss.tools.cdi.bot.test.quickfix.test;
 
-import org.jboss.tools.cdi.bot.test.annotations.CDIWizardType;
-import org.jboss.tools.cdi.bot.test.annotations.ValidationType;
+import org.jboss.tools.cdi.bot.test.annotations.ProblemsType;
+import org.jboss.tools.cdi.bot.test.creator.BeanCreator;
+import org.jboss.tools.cdi.bot.test.creator.StereotypeCreator;
+import org.jboss.tools.cdi.bot.test.creator.config.BeanConfiguration;
+import org.jboss.tools.cdi.bot.test.creator.config.StereotypeConfiguration;
 import org.jboss.tools.cdi.bot.test.quickfix.base.BeansXMLQuickFixTestBase;
-import org.jboss.tools.ui.bot.ext.Timing;
+import org.jboss.tools.cdi.bot.test.util.BeansXMLUtil;
+import org.jboss.tools.cdi.bot.test.util.ProjectUtil;
+import org.jboss.tools.cdi.bot.test.util.QuickFixUtil;
+import org.jboss.tools.cdi.reddeer.cdi.ui.NewBeansXMLCreationWizardDialog;
 import org.junit.After;
 import org.junit.Test;
 
@@ -26,10 +32,15 @@ import org.junit.Test;
 
 public class BeansXMLValidationQuickFixTest extends BeansXMLQuickFixTestBase {
 
+	@Override
+	public String getProjectName() {
+		return "noBeansXML";
+	}
+	
 	@After
 	public void waitForJobs() {
 		
-		editResourceUtil.deleteFolderInProjectExplorer("beans.xml", getProjectName(), 
+		ProjectUtil.deleteFolder("beans.xml", getProjectName(), 
 				"WebContent", "WEB-INF");
 		util.waitForNonIgnoredJobs();
 	}
@@ -38,9 +49,7 @@ public class BeansXMLValidationQuickFixTest extends BeansXMLQuickFixTestBase {
 	public void testNoBeanComponent() {
 
 		String bean = "A1";
-		beansHelper.createBeansXMLWithAlternative(getProjectName(), getPackageName(), bean);
-		
-		waitForCDIValidator();
+		BeansXMLUtil.createBeansXMLWithAlternative(getProjectName(), getPackageName(), bean);
 		
 		resolveAddNewAlternative(bean, getPackageName());
 		
@@ -51,7 +60,7 @@ public class BeansXMLValidationQuickFixTest extends BeansXMLQuickFixTestBase {
 	public void testNoStereotypeAnnotation() {
 
 		String stereotype = "S1";
-		beansHelper.createBeansXMLWithStereotype(getProjectName(), getPackageName(), stereotype);
+		BeansXMLUtil.createBeansXMLWithStereotype(getProjectName(), getPackageName(), stereotype);
 		
 		resolveAddNewStereotype(stereotype, getPackageName());
 		
@@ -64,9 +73,11 @@ public class BeansXMLValidationQuickFixTest extends BeansXMLQuickFixTestBase {
 
 		String bean = "B1";
 		
-		wizard.createCDIComponent(CDIWizardType.BEAN, bean, getPackageName(), null);
+		new BeanCreator(new BeanConfiguration()
+			.setPackageName(getPackageName())
+			.setName(bean)).newBean();
 		
-		beansHelper.createBeansXMLWithAlternative(getProjectName(), getPackageName(), bean);
+		BeansXMLUtil.createBeansXMLWithAlternative(getProjectName(), getPackageName(), bean);
 		
 		resolveAddAlternativeToBean(bean);
 		
@@ -79,9 +90,11 @@ public class BeansXMLValidationQuickFixTest extends BeansXMLQuickFixTestBase {
 
 		String stereotype = "S2";
 		
-		wizard.createCDIComponent(CDIWizardType.STEREOTYPE, stereotype, getPackageName(), null);
+		new StereotypeCreator(new StereotypeConfiguration()
+			.setPackageName(getPackageName())
+			.setName(stereotype)).newStereotype();
 		
-		beansHelper.createBeansXMLWithStereotype(getProjectName(), getPackageName(), stereotype);
+		BeansXMLUtil.createBeansXMLWithStereotype(getProjectName(), getPackageName(), stereotype);
 		
 		resolveAddAlternativeToStereotype(stereotype);
 		
@@ -93,7 +106,7 @@ public class BeansXMLValidationQuickFixTest extends BeansXMLQuickFixTestBase {
 	public void testNoInterceptor() {
 
 		String interceptor = "I1";
-		beansHelper.createBeansXMLWithInterceptor(getProjectName(), 
+		BeansXMLUtil.createBeansXMLWithInterceptor(getProjectName(), 
 				getPackageName(), interceptor);
 		
 		resolveAddNewInterceptor(interceptor, getPackageName());
@@ -106,7 +119,7 @@ public class BeansXMLValidationQuickFixTest extends BeansXMLQuickFixTestBase {
 	public void testNoDecorator() {
 
 		String decorator = "D1";
-		beansHelper.createBeansXMLWithDecorator(getProjectName(), getPackageName(), decorator);
+		BeansXMLUtil.createBeansXMLWithDecorator(getProjectName(), getPackageName(), decorator);
 		
 		resolveAddNewDecorator(decorator, getPackageName());
 		
@@ -118,13 +131,12 @@ public class BeansXMLValidationQuickFixTest extends BeansXMLQuickFixTestBase {
 	@Test
 	public void testNoBeansXmlPresent() {
 		
-		quickFixHelper.checkQuickFix(ValidationType.NO_BEANS_XML, 
-				"Create File beans.xml", getProjectName(), getValidationProvider());
+		QuickFixUtil.performOpenQuickFix(ProblemsType.WARNINGS, 
+			"Missing beans.xml file in the project");
+		QuickFixUtil.useQuickFix("Create File beans.xml");
+		new NewBeansXMLCreationWizardDialog().finish();
 		
-	}
-	
-	private void waitForCDIValidator() {
-		bot.sleep(Timing.time3S());
+		assertTrue(isBeanXMLValidationErrorEmpty());
 	}
 	
 }

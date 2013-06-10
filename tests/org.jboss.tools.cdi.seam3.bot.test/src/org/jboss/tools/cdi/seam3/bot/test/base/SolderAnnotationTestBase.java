@@ -11,9 +11,9 @@
 
 package org.jboss.tools.cdi.seam3.bot.test.base;
 
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
 import org.jboss.tools.cdi.bot.test.CDIConstants;
 import org.jboss.tools.cdi.bot.test.annotations.ProblemsType;
+import org.jboss.tools.cdi.bot.test.util.QuickFixUtil;
 import org.jboss.tools.ui.bot.ext.helper.OpenOnHelper;
 
 /**
@@ -23,26 +23,29 @@ import org.jboss.tools.ui.bot.ext.helper.OpenOnHelper;
  */
 public class SolderAnnotationTestBase extends Seam3TestBase {
 	
+	private static final String VALIDATION_PROBLEM_1 = "No bean is eligible "
+			+ "for injection to the injection point";
+	private static final String VALIDATION_PROBLEM_2 = "Multiple beans are "
+			+ "eligible for injection to the injection point";
+	
 	protected String APPLICATION_CLASS = "Application.java";
 	
 	/**
 	 * 
 	 * @param projectName
 	 */
-	protected void testNoBeanValidationProblemExists(String projectName) {
-		
-		testBeanValidationProblemExists(projectName, true);
-		
+	protected void testNoBeanValidationProblemExists() {
+		testBeanValidationProblemExists(
+				ProblemsType.WARNINGS, VALIDATION_PROBLEM_1);
 	}
 	
 	/**
 	 * 
 	 * @param projectName
 	 */
-	protected void testMultipleBeansValidationProblemExists(String projectName) {
-		
-		testBeanValidationProblemExists(projectName, false);
-		
+	protected void testMultipleBeansValidationProblemExists() {
+		testBeanValidationProblemExists(
+				ProblemsType.WARNINGS, VALIDATION_PROBLEM_2);
 	}
 	
 	/**
@@ -50,22 +53,8 @@ public class SolderAnnotationTestBase extends Seam3TestBase {
 	 * @param projectName
 	 * @param noBeanEligible
 	 */
-	private void testBeanValidationProblemExists(String projectName, boolean noBeanEligible) {
-		
-		SWTBotTreeItem[] validationProblems = quickFixHelper.getProblems(
-				ProblemsType.WARNINGS, projectName);
-		assertTrue(validationProblems.length > 0);
-		String validationMessage = noBeanEligible?
-				CDIConstants.NO_BEAN_IS_ELIGIBLE:
-				CDIConstants.MULTIPLE_BEANS;
-		for (SWTBotTreeItem ti : validationProblems) {
-			if (ti.getText().contains(validationMessage)) {
-				return;
-			}
-		}
-		fail("CDI Validation problem with text '" 
-				+ validationMessage 
-				+ "' was not found!");
+	private void testBeanValidationProblemExists(ProblemsType problemsType, String problem) {
+		QuickFixUtil.waitForProblem(problemsType, problem);
 	}
 	
 	/**
@@ -76,11 +65,8 @@ public class SolderAnnotationTestBase extends Seam3TestBase {
 	 * @param producer
 	 * @param producerMethod
 	 */
-	protected void testProperInjectBean(String projectName, 
-			String openOnString, String openedClass) {
-		
-		testProperInject(projectName, openOnString, openedClass, false, null);
-		
+	protected void testProperInjectBean(String openOnString, String openedClass) {
+		testProperInject(openOnString, openedClass, false, null);
 	}
 	
 	/**
@@ -89,12 +75,9 @@ public class SolderAnnotationTestBase extends Seam3TestBase {
 	 * @param openOnString
 	 * @param openedClass
 	 */
-	protected void testProperInjectProducer(String projectName, 
-			String openOnString, String openedClass, 
+	protected void testProperInjectProducer(String openOnString, String openedClass, 
 			String producerMethod) {
-		
-		testProperInject(projectName, openOnString, openedClass, true, producerMethod);
-		
+		testProperInject(openOnString, openedClass, true, producerMethod);
 	}
 	
 	/**
@@ -105,13 +88,11 @@ public class SolderAnnotationTestBase extends Seam3TestBase {
 	 * @param producer
 	 * @param producerMethod
 	 */
-	private void testProperInject(String projectName, String openOnString, 
-			String openedClass, 
+	private void testProperInject(String openOnString, String openedClass, 
 			boolean producer, String producerMethod) {
 		
-		SWTBotTreeItem[] validationProblems = quickFixHelper.getProblems(
-				ProblemsType.WARNINGS, projectName);
-		assertTrue(validationProblems.length == 0);
+		QuickFixUtil.waitForProblemDisappearance(ProblemsType.WARNINGS, VALIDATION_PROBLEM_1);
+		QuickFixUtil.waitForProblemDisappearance(ProblemsType.WARNINGS, VALIDATION_PROBLEM_1);
 		OpenOnHelper.checkOpenOnFileIsOpened(bot, APPLICATION_CLASS, 
 				openOnString, CDIConstants.OPEN_INJECT_BEAN, openedClass + ".java");
 		if (producer) {

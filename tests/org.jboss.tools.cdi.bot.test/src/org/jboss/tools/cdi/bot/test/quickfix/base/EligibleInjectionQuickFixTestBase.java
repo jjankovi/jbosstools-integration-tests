@@ -11,23 +11,22 @@
 
 package org.jboss.tools.cdi.bot.test.quickfix.base;
 
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
+import java.util.List;
+
+import org.jboss.reddeer.eclipse.ui.ide.QuickFixDialog;
+import org.jboss.reddeer.swt.impl.table.DefaultTable;
+import org.jboss.reddeer.swt.wait.WaitUntil;
 import org.jboss.tools.cdi.bot.test.CDITestBase;
-import org.jboss.tools.cdi.bot.test.annotations.ValidationType;
+import org.jboss.tools.cdi.bot.test.annotations.ProblemsType;
+import org.jboss.tools.cdi.bot.test.condition.TableHasItem;
 import org.jboss.tools.cdi.bot.test.quickfix.injection.QualifierOperation;
-import org.jboss.tools.cdi.bot.test.quickfix.validators.BeanValidationProvider;
-import org.jboss.tools.cdi.bot.test.quickfix.validators.IValidationProvider;
-import org.jboss.tools.cdi.bot.test.uiutils.wizards.QuickFixDialogWizard;
-import org.jboss.tools.cdi.bot.test.uiutils.wizards.SpecifyBeanDialogWizard;
-import org.jboss.tools.ui.bot.ext.Timing;
+import org.jboss.tools.cdi.bot.test.util.QuickFixUtil;
+import org.jboss.tools.cdi.reddeer.cdi.ui.AddQualifiersToBeanWizardDialog;
+import org.jboss.tools.cdi.reddeer.cdi.ui.AddQualifiersToBeanWizardDialogFirstPage;
+import org.jboss.tools.cdi.reddeer.cdi.ui.NewQualifierWizardDialog;
+import org.jboss.tools.cdi.reddeer.cdi.ui.NewQualifierWizardPage;
 
 public class EligibleInjectionQuickFixTestBase extends CDITestBase {
-	
-	private static IValidationProvider validationProvider = new BeanValidationProvider();
-	
-	public IValidationProvider validationProvider() {
-		return validationProvider;
-	}
 	
 	/**
 	 * Method resolves multiple bean injection problem. By setting class which
@@ -37,56 +36,55 @@ public class EligibleInjectionQuickFixTestBase extends CDITestBase {
 	 * @param classToQualify
 	 * @param qualifier
 	 */
-	public void resolveMultipleBeans(ValidationType validationType, String classToQualify, 
-			String qualifier, QualifierOperation operation) {
-		
-		SWTBotTreeItem validationProblem = quickFixHelper.getProblem(
-				validationType, getProjectName(), validationProvider());		
-		assertNotNull(validationProblem);
-		
-		quickFixHelper.openQuickFix(validationProblem);
-		QuickFixDialogWizard quickFixWizard = new QuickFixDialogWizard();
-		for (String availableFix : quickFixWizard.getAvailableFixes()) {
+	public void resolveMultipleBeans(ProblemsType problemsType, String problem, 
+			String classToQualify, String qualifier, QualifierOperation operation) {
+		String qualifierFullName = qualifier + " - " + getPackageName();
+		QuickFixUtil.performOpenQuickFix(problemsType, problem);
+		QuickFixDialog quickFixDialog = new QuickFixDialog();
+		for (String availableFix : quickFixDialog.getAvailableFixes()) {
 			if (availableFix.contains(classToQualify)) {
-				quickFixWizard.setFix(availableFix).
-				setResource(quickFixWizard.getResources().get(0)).
-				finish();
+				quickFixDialog.selectFix(availableFix);
+				quickFixDialog.setResource(quickFixDialog.getResources().get(0));
+				quickFixDialog.finish();
+				break;
 			}
 		}
 	
-		SpecifyBeanDialogWizard spBeanDialogWizard = new SpecifyBeanDialogWizard();
+		AddQualifiersToBeanWizardDialog dialog = new AddQualifiersToBeanWizardDialog();
+		AddQualifiersToBeanWizardDialogFirstPage page = dialog.getFirstPage();
 		if (operation == QualifierOperation.ADD) {
-			boolean qualifFound = false;
-			for (String availQualifer : spBeanDialogWizard.getAvailableQualifiers()) {
-				if (availQualifer.equals(qualifier + " - " + getPackageName())) {
-					qualifFound = true;
-					spBeanDialogWizard.addQualifier(availQualifer);
-				}
+			if (!qualifierIsPresent(qualifierFullName, 
+					page.getAvailableQualifiers())) {
+				page.createNewQualifier();
+				NewQualifierWizardDialog qualifierDialog = new NewQualifierWizardDialog();
+				NewQualifierWizardPage qualifierPage = qualifierDialog.getFirstPage();
+				qualifierPage.setName(qualifier);
+					qualifierPage.setPackage(getPackageName());
+				quickFixDialog.finish();
+				new AddQualifiersToBeanWizardDialog();
+				new WaitUntil(new TableHasItem(new DefaultTable(0), 
+						qualifierFullName));
 			}
-			// there was no such qualifer, it has to be created, after creation it 
-			// has to be added to in Bean qualifiers
-			if (!qualifFound) {
-				spBeanDialogWizard.createNewQualifier(qualifier, getPackageName()).
-				setName(qualifier).finish();
-				bot.sleep(Timing.time2S());
-				for (String availQualifer : spBeanDialogWizard.getAvailableQualifiers()) {
-					if (availQualifer.equals(qualifier + " - " + getPackageName())) {						
-						spBeanDialogWizard.addQualifier(availQualifer);
-					}
-				}
-			}
+			page.selectAvailableQualifier(qualifierFullName);
+			page.add();
 			
 		} else {
-			for (String inBeanQualifer : spBeanDialogWizard.getInBeanQualifiers()) {
-				if (inBeanQualifer.equals(qualifier + " - " + getPackageName())) {
-					spBeanDialogWizard.removeQualifier(inBeanQualifer);
-				}
+			if (qualifierIsPresent(qualifier + " - " + getPackageName(), 
+					page.getInBeanQualifiers())) {
+				page.selectInBeanQualifier(qualifier + " - " + getPackageName());
+				page.remove();
 			}
 		}
-		
-		spBeanDialogWizard.finish();
-		
-		util.waitForNonIgnoredJobs();
+		dialog.finish();
+	}
+	
+	private boolean qualifierIsPresent(String qualifier, List<String> qualifiers) {
+		for (String availableQualifier : qualifiers) {
+			if (availableQualifier.equals(qualifier)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

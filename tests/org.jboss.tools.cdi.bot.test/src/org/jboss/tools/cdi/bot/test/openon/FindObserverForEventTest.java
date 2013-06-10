@@ -13,7 +13,12 @@ package org.jboss.tools.cdi.bot.test.openon;
 
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEditor;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTable;
-import org.jboss.tools.cdi.bot.test.annotations.CDIWizardType;
+import org.jboss.tools.cdi.bot.test.creator.BeanCreator;
+import org.jboss.tools.cdi.bot.test.creator.QualifierCreator;
+import org.jboss.tools.cdi.bot.test.creator.config.BeanConfiguration;
+import org.jboss.tools.cdi.bot.test.creator.config.QualifierConfiguration;
+import org.jboss.tools.cdi.bot.test.creator.util.CDICreatorUtil;
+import org.jboss.tools.ui.bot.ext.Timing;
 import org.jboss.tools.ui.bot.ext.helper.OpenOnHelper;
 import org.junit.Test;
 
@@ -26,9 +31,9 @@ import org.junit.Test;
 public class FindObserverForEventTest extends OpenOnBase {
 
 	@Test
-	public void testSimpleCaseObserverFinding() {
+	public void testObserverFinding() {
 
-		prepareSimpleObserverFinding();
+		prepareTestExecution();
 
 		for (int i = 0; i < events.length; i++) {			
 			String eventsClass = "EventsProducer.java";
@@ -55,34 +60,38 @@ public class FindObserverForEventTest extends OpenOnBase {
 
 	}
 
-	// not implemented yet
-	@Test
-	public void testComplexCaseObserverFinding() {
+	private void prepareTestExecution() {
 
-		prepareComplexObserverFinding();
-
-		testComplexObserverFinding();
-	}
-
-	private void prepareSimpleObserverFinding() {
-
-		wizard.createCDIComponent(CDIWizardType.QUALIFIER, "Q1", getPackageName(), null);
-
-		wizard.createCDIComponent(CDIWizardType.QUALIFIER, "Q2", getPackageName(), null);
-
-		wizard.createCDIComponentWithContent(CDIWizardType.BEAN, "MyBean1", 
-				getPackageName(), null, "/resources/events/MyBean1.java.cdi");		
-
-		wizard.createCDIComponentWithContent(CDIWizardType.BEAN, "MyBean2", 
-				getPackageName(), null, "/resources/events/MyBean2.java.cdi");
-
-		wizard.createCDIComponentWithContent(CDIWizardType.BEAN, "EventsProducer", 
-				getPackageName(), null, "/resources/events/EventsProducer.java.cdi");
+		QualifierConfiguration qualifierConfig = new QualifierConfiguration();
+		qualifierConfig.setPackageName(getPackageName()).setName("Q1");
+		new QualifierCreator(qualifierConfig).newQualifier();
 		
-		wizard.createCDIComponentWithContent(CDIWizardType.BEAN, "ObserverBean", 
-				getPackageName(), null, "/resources/events/ObserverBean.java.cdi");
+		qualifierConfig.setName("Q2");
+		new QualifierCreator(qualifierConfig).newQualifier();
 		
-		util.waitForNonIgnoredJobs();
+		BeanConfiguration beanConfig = new BeanConfiguration();
+		beanConfig.setPackageName(getPackageName()).setName("MyBean1");
+		new BeanCreator(beanConfig).newBean();
+		CDICreatorUtil.fillContentOfEditor("MyBean1.java", 
+			"/resources/events/MyBean1.java.cdi");
+		
+		beanConfig.setPackageName(getPackageName()).setName("MyBean2");
+		new BeanCreator(beanConfig).newBean();
+		CDICreatorUtil.fillContentOfEditor("MyBean2.java", 
+			"/resources/events/MyBean2.java.cdi");
+		
+		beanConfig.setPackageName(getPackageName()).setName("EventsProducer");
+		new BeanCreator(beanConfig).newBean();
+		CDICreatorUtil.fillContentOfEditor("EventsProducer.java", 
+			"/resources/events/EventsProducer.java.cdi");
+		
+		beanConfig.setPackageName(getPackageName()).setName("ObserverBean");
+		new BeanCreator(beanConfig).newBean();
+		CDICreatorUtil.fillContentOfEditor("ObserverBean.java", 
+			"/resources/events/ObserverBean.java.cdi");
+		
+		bot.sleep(Timing.time2S());
+				
 	}
 
 	private void checkEventsAndObserver(String name, String className,
@@ -260,19 +269,4 @@ public class FindObserverForEventTest extends OpenOnBase {
 		return allEventsFound;
 	}
 
-	// not implemented yet
-	private void prepareComplexObserverFinding() {
-
-	}
-
-	// not implemented yet
-	private void testComplexObserverFinding() {
-		/**
-		 * main idea - check events which have multiple qualifiers defined
-		 * (http://docs.jboss.org/weld/reference/1.0.0/en-US/html/events.html -
-		 * 11.6) - check events with qualifiers which has members
-		 * (http://docs.jboss.org/weld/reference/1.0.0/en-US/html/events.html -
-		 * 11.5)
-		 */
-	}
 }

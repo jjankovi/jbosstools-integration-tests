@@ -28,8 +28,7 @@ import org.junit.runners.Suite.SuiteClasses;
 * @author Jaroslav Jankovic
 */
 @RunWith(RequirementAwareSuite.class)
-@SuiteClasses({	
-//	PerspectiveTest.class,	 
+@SuiteClasses({		 
 	ConfigurationPresetTest.class,
 	FacetTest.class, 
 	CDIWebProjectWizardTest.class,

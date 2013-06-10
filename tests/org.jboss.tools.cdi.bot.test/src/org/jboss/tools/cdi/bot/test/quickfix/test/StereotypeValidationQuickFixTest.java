@@ -11,12 +11,12 @@
 
 package org.jboss.tools.cdi.bot.test.quickfix.test;
 
-
 import org.jboss.tools.cdi.bot.test.CDITestBase;
-import org.jboss.tools.cdi.bot.test.annotations.CDIWizardType;
-import org.jboss.tools.cdi.bot.test.annotations.ValidationType;
-import org.jboss.tools.cdi.bot.test.quickfix.validators.IValidationProvider;
-import org.jboss.tools.cdi.bot.test.quickfix.validators.StereotypeValidationProvider;
+import org.jboss.tools.cdi.bot.test.annotations.ProblemsType;
+import org.jboss.tools.cdi.bot.test.creator.StereotypeCreator;
+import org.jboss.tools.cdi.bot.test.creator.config.StereotypeConfiguration;
+import org.jboss.tools.cdi.bot.test.creator.util.CDICreatorUtil;
+import org.jboss.tools.cdi.bot.test.util.QuickFixUtil;
 import org.junit.Test;
 
 /**
@@ -27,11 +27,19 @@ import org.junit.Test;
 
 public class StereotypeValidationQuickFixTest extends CDITestBase {
 	
-	private static IValidationProvider validationProvider = new StereotypeValidationProvider();
-
-	public IValidationProvider validationProvider() {
-		return validationProvider;
-	}
+	private static final String VALIDATION_PROBLEM_1 = "Stereotype annotation " + 
+		"type must be annotated with one of";
+	private static final String VALIDATION_PROBLEM_2 = "Stereotype annotation " + 
+		"type must be annotated with @Retention(RUNTIME)";
+	private static final String VALIDATION_PROBLEM_3 = "Stereotype declares a " + 
+		"non-empty @Named annotation";
+	private static final String VALIDATION_PROBLEM_4 ="A stereotype should not " + 
+		"be annotated @Typed";
+	
+	private static final String QUICK_FIX_1 = "TYPE, METHOD, FIELD";
+	private static final String QUICK_FIX_2 = "Change annotation";
+	private static final String QUICK_FIX_3 = "Add annotation";
+	private static final String QUICK_FIX_4 = "Delete annotation @Typed";
 	
 	// https://issues.jboss.org/browse/JBIDE-7630
 	@Test
@@ -39,17 +47,18 @@ public class StereotypeValidationQuickFixTest extends CDITestBase {
 		
 		String className = "Stereotype1";
 		
-		wizard.createCDIComponent(CDIWizardType.STEREOTYPE, className, getPackageName(), null);
+		newStereotype(getPackageName(), className);
 		
 		editResourceUtil.replaceInEditor("@Target({ TYPE, METHOD, FIELD })", 
 				"@Target({ TYPE, FIELD })");
 		
-		quickFixHelper.checkQuickFix(ValidationType.TARGET, "@Target({TYPE, METHOD, FIELD})", 
-				getProjectName(), validationProvider());
-
+		QuickFixUtil.performQuickFix(ProblemsType.WARNINGS, 
+				VALIDATION_PROBLEM_1, QUICK_FIX_1);
+		
 		editResourceUtil.replaceInEditor("@Target({TYPE, METHOD, FIELD})", "");
 		
-		quickFixHelper.checkQuickFix(ValidationType.TARGET, getProjectName(), validationProvider());
+		QuickFixUtil.performQuickFix(ProblemsType.WARNINGS, 
+				VALIDATION_PROBLEM_1, QUICK_FIX_1);
 	}
 	
 	// https://issues.jboss.org/browse/JBIDE-7631
@@ -58,15 +67,16 @@ public class StereotypeValidationQuickFixTest extends CDITestBase {
 		
 		String className = "Stereotype2";
 
-		wizard.createCDIComponent(CDIWizardType.STEREOTYPE, className, getPackageName(), null);
+		newStereotype(getPackageName(), className);
 		
 		editResourceUtil.replaceInEditor("@Retention(RUNTIME)", "@Retention(CLASS)");
 		
-		quickFixHelper.checkQuickFix(ValidationType.RETENTION, getProjectName(), validationProvider());
-				
+		QuickFixUtil.performQuickFix(ProblemsType.WARNINGS, 
+				VALIDATION_PROBLEM_2, QUICK_FIX_2);
 		editResourceUtil.replaceInEditor("@Retention(RUNTIME)", "");
 		
-		quickFixHelper.checkQuickFix(ValidationType.RETENTION, getProjectName(), validationProvider());
+		QuickFixUtil.performQuickFix(ProblemsType.WARNINGS, 
+				VALIDATION_PROBLEM_2, QUICK_FIX_3);
 		
 	}
 	
@@ -76,12 +86,13 @@ public class StereotypeValidationQuickFixTest extends CDITestBase {
 		
 		String className = "Stereotype3";
 		
-		wizard.createCDIComponentWithContent(CDIWizardType.STEREOTYPE, className, 
-				getPackageName(), null, "/resources/quickfix/stereotype/StereotypeWithNamed.java.cdi");
-	
+		newStereotype(getPackageName(), className,
+			"/resources/quickfix/stereotype/StereotypeWithNamed.java.cdi");
+		
 		editResourceUtil.replaceInEditor("StereotypeComponent", className);
 		
-		quickFixHelper.checkQuickFix(ValidationType.NAMED, getProjectName(), validationProvider());
+		QuickFixUtil.performQuickFix(ProblemsType.ERRORS, 
+				VALIDATION_PROBLEM_3, QUICK_FIX_2);
 		
 	}
 	
@@ -91,13 +102,26 @@ public class StereotypeValidationQuickFixTest extends CDITestBase {
 		
 		String className = "Stereotype4";
 		
-		wizard.createCDIComponentWithContent(CDIWizardType.STEREOTYPE, className, 
-				getPackageName(), null, "/resources/quickfix/stereotype/StereotypeWithTyped.java.cdi");
+		newStereotype(getPackageName(), className,
+			"/resources/quickfix/stereotype/StereotypeWithTyped.java.cdi");
 		
 		editResourceUtil.replaceInEditor("StereotypeComponent", className);
 		
-		quickFixHelper.checkQuickFix(ValidationType.TYPED, getProjectName(), validationProvider());
+		QuickFixUtil.performQuickFix(ProblemsType.WARNINGS, 
+				VALIDATION_PROBLEM_4, QUICK_FIX_4);
 		
 	}	
+	
+	private void newStereotype(String packageName, String name) {
+		newStereotype(packageName, name, null);
+	}
+	
+	private void newStereotype(String packageName, String name, String resource) {
+		new StereotypeCreator(new StereotypeConfiguration()
+			.setPackageName(packageName)
+			.setName(name)).newStereotype();
+		if (resource != null) 
+			CDICreatorUtil.fillContentOfEditor(name + ".java", resource);
+	}
 
 }

@@ -13,14 +13,15 @@ package org.jboss.tools.cdi.bot.test.wizard;
 
 import org.jboss.tools.cdi.bot.test.CDIConstants;
 import org.jboss.tools.cdi.bot.test.CDITestBase;
+import org.jboss.tools.cdi.bot.test.util.ProjectUtil;
 import org.junit.Test;
 
 public class CDIWebProjectWizardTest extends CDITestBase {
 
 	@Override	
 	public void prepareWorkspace() {
-		if (!projectHelper.projectExists(getProjectName())) {
-			projectHelper.createCDIProjectWithCDIWizard(getProjectName());
+		if (!ProjectUtil.projectExists(getProjectName())) {
+			ProjectUtil.newCDIProjectWithCDIWizard(getProjectName());
 		}
 	}
 	
@@ -31,17 +32,10 @@ public class CDIWebProjectWizardTest extends CDITestBase {
 	
 	@Test
 	public void testCDIWizard() {
-		if (projectHelper.projectExists(getProjectName())) {
-			LOGGER.info("CDI project was sucessfully created by CDI Web Project wizard");
-			assertTrue(projectHelper.checkCDISupport(getProjectName()));
-			LOGGER.info("Project has correctly set CDI support");		
-			assertTrue("Error: beans.xml should be created when using CDI Web Project wizard", 
-					packageExplorer.isFilePresent(getProjectName(),
-							CDIConstants.WEB_INF_BEANS_XML_PATH.split("/")));
-		} else {
-			fail("CDI project was not succesfully created by CDI Web Project wizard");
-		}
-		
+		assertTrue(ProjectUtil.checkCDISupport(getProjectName()));
+		assertTrue("Error: beans.xml should be created when using CDI Web Project wizard", 
+			packageExplorer.isFilePresent(getProjectName(),
+			CDIConstants.WEB_INF_BEANS_XML_PATH.split("/")));
 	}
 	
 }

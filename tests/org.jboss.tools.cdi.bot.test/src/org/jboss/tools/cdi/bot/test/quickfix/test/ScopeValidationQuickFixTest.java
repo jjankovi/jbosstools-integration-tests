@@ -13,10 +13,10 @@ package org.jboss.tools.cdi.bot.test.quickfix.test;
 
 
 import org.jboss.tools.cdi.bot.test.CDITestBase;
-import org.jboss.tools.cdi.bot.test.annotations.CDIWizardType;
-import org.jboss.tools.cdi.bot.test.annotations.ValidationType;
-import org.jboss.tools.cdi.bot.test.quickfix.validators.IValidationProvider;
-import org.jboss.tools.cdi.bot.test.quickfix.validators.ScopeValidationProvider;
+import org.jboss.tools.cdi.bot.test.annotations.ProblemsType;
+import org.jboss.tools.cdi.bot.test.creator.ScopeCreator;
+import org.jboss.tools.cdi.bot.test.creator.config.ScopeConfiguration;
+import org.jboss.tools.cdi.bot.test.util.QuickFixUtil;
 import org.junit.Test;
 
 /**
@@ -27,11 +27,13 @@ import org.junit.Test;
 
 public class ScopeValidationQuickFixTest extends CDITestBase {
 	
-	private static IValidationProvider validationProvider = new ScopeValidationProvider();
-
-	public IValidationProvider validationProvider() {
-		return validationProvider;
-	}
+	private static final String VALIDATION_PROBLEM_1 = "Scope annotation " + 
+		"type must be annotated with @Target";
+	private static final String VALIDATION_PROBLEM_2 = "Scope annotation " + 
+		"type must be annotated with @Retention(RUNTIME)";
+	
+	private static final String QUICK_FIX_1 = "Change annotation";
+	private static final String QUICK_FIX_2 = "Add annotation";
 	
 	// https://issues.jboss.org/browse/JBIDE-7633
 	@Test
@@ -39,16 +41,19 @@ public class ScopeValidationQuickFixTest extends CDITestBase {
 		
 		String className = "Scope1";
 		
-		wizard.createCDIComponent(CDIWizardType.SCOPE, className, getPackageName(), null);
+		newScope(getPackageName(), className);
 		
 		editResourceUtil.replaceInEditor("@Target({ TYPE, METHOD, FIELD })", 
 				"@Target({ TYPE, FIELD })");
 		
-		quickFixHelper.checkQuickFix(ValidationType.TARGET, getProjectName(), validationProvider());
+		QuickFixUtil.performQuickFix(ProblemsType.WARNINGS, 
+				VALIDATION_PROBLEM_1, QUICK_FIX_1);
 		
 		editResourceUtil.replaceInEditor("@Target({TYPE, METHOD, FIELD})", "");
 		
-		quickFixHelper.checkQuickFix(ValidationType.TARGET, getProjectName(), validationProvider());
+		QuickFixUtil.performQuickFix(ProblemsType.WARNINGS, 
+				VALIDATION_PROBLEM_1, QUICK_FIX_2);
+		
 	}
 	
 	// https://issues.jboss.org/browse/JBIDE-7631
@@ -57,16 +62,24 @@ public class ScopeValidationQuickFixTest extends CDITestBase {
 		
 		String className = "Scope2";
 
-		wizard.createCDIComponent(CDIWizardType.SCOPE, className, getPackageName(), null);
+		newScope(getPackageName(), className);
 				
 		editResourceUtil.replaceInEditor("@Retention(RUNTIME)", "@Retention(CLASS)");
 		
-		quickFixHelper.checkQuickFix(ValidationType.RETENTION, getProjectName(), validationProvider());
+		QuickFixUtil.performQuickFix(ProblemsType.WARNINGS, 
+				VALIDATION_PROBLEM_2, QUICK_FIX_1);
 		
 		editResourceUtil.replaceInEditor("@Retention(RUNTIME)", "");
 		
-		quickFixHelper.checkQuickFix(ValidationType.RETENTION, getProjectName(), validationProvider());
+		QuickFixUtil.performQuickFix(ProblemsType.WARNINGS, 
+				VALIDATION_PROBLEM_2, QUICK_FIX_2);
 		
 	}
+	
+	private void newScope(String packageName, String name) {
+		new ScopeCreator(new ScopeConfiguration()
+			.setPackageName(packageName)
+			.setName(name)).newScope();
+	} 
 	
 }

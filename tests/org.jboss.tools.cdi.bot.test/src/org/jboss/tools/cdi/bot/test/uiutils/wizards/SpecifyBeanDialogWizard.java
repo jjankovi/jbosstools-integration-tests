@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.swtbot.swt.finder.SWTBot;
-import org.jboss.tools.cdi.bot.test.annotations.CDIWizardType;
 import org.jboss.tools.ui.bot.ext.types.IDELabel;
 
 public class SpecifyBeanDialogWizard extends Wizard {
@@ -56,9 +55,8 @@ public class SpecifyBeanDialogWizard extends Wizard {
 		return this;
 	}
 	
-	public CDIWizardBase createNewQualifier(String name, String packageName) {
+	public void createNewQualifier() {
 		clickButton(CREATE_NEW_QUALIFIER);
-		return new CDIWizardBase(CDIWizardType.QUALIFIER);
 	}
 	
 	public boolean canAdd() {
